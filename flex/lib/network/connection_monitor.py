@@ -26,7 +26,7 @@ class ConnectionMonitor(object):
     def schedule(self, timeout = 0):
         events = self._epoll.poll(timeout)
         for fd, event in events:
-            self._connections[fd].handle(event)
+            self._connections[fd].get_handler().handle(event)
 
     def __del__(self):
         for fd in self._connections:

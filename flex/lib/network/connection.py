@@ -18,14 +18,14 @@ class Connection(object):
     def get_address(self):
         return self._address
 
+    def get_handler(self):
+        return self._handler
+
     def get_fileno(self):
         return self._sock.fileno()
 
-    def handle(self, event):
-        return self._handler.handle(event)
-
     def send(self, data):
-        return self._handler.send(data)
+        return self._sock.send(data)
 
     def recv(self, size = 1024):
         return self._sock.recv(size)

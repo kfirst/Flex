@@ -6,6 +6,7 @@ Created on 2013-3-13
 '''
 
 import select
+import base64
 from flex.lib.network.connection_pool import ConnectionPool
 from flex.lib.network.connection_generator import ConnectionGenerator
 from flex.lib.network.connection_monitor import ConnectionMonitor
@@ -28,7 +29,7 @@ class Network(object):
             connection = self._generator.get_client(address, ClientHandler(self, self._handler))
             self._connection_pool.add(connection.get_address(), connection)
             self._monitor.add(connection)
-        connection.send(data)
+        connection.get_handler().send(data)
 
     def schedule(self, timeout = 0):
         self._monitor.schedule(timeout)
@@ -55,7 +56,7 @@ class ServerHandler(ConnectionHandler):
 
 class ClientHandler(ConnectionHandler):
 
-    EOL = b'\r\n'
+    EOL = b'\n'
     EOL_LENGTH = len(EOL)
 
     def __init__(self, network, data_listener):
@@ -71,13 +72,13 @@ class ClientHandler(ConnectionHandler):
             try:
                 while(True):
                     index = self._request.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
-                    self._handler.handle(self._request[0:index])
+                    self._handler.handle(base64.b64decode(self._request[0:index]))
                     self._request = self._request[index + ClientHandler.EOL_LENGTH:]
             except ValueError:
                 pass
         elif event & select.EPOLLOUT:
             if self._response:
-                writen = self._connection.get_sock().send(self._response[0])
+                writen = self._connection.send(self._response[0])
                 if len(self._response[0]) == writen:
                     del self._response[0]
                 else:
@@ -86,7 +87,7 @@ class ClientHandler(ConnectionHandler):
             self._network._remove_connection(self._connection)
 
     def send(self, data):
-        self._response.append(data + ClientHandler.EOL)
+        self._response.append(base64.b64encode(data) + ClientHandler.EOL)
 
 
 if __name__ == '__main__':
