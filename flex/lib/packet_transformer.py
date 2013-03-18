@@ -7,7 +7,7 @@ Created on 2013-3-15
 
 import pickle
 
-class PacketTransform(object):
+class PacketTransformer(object):
 
     def packet_to_data(self, packet):
         return pickle.dumps(packet, pickle.HIGHEST_PROTOCOL)
@@ -23,11 +23,11 @@ if __name__ == '__main__':
     header.add_to_path('path')
     p = Packet(header, 'content')
     print p.__dict__
-    j = PacketTransform().packet_to_data(p)
+    j = PacketTransformer().packet_to_data(p)
     print j
-    p = PacketTransform().data_to_packet(j)
+    p = PacketTransformer().data_to_packet(j)
     print p.__dict__
-    j = PacketTransform().packet_to_data(p)
+    j = PacketTransformer().packet_to_data(p)
     print j
 
 

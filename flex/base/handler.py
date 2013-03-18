@@ -18,5 +18,11 @@ class ConnectionHandler(object):
 
 class DataHandler(object):
 
-    def handle(self, data):
+    def handle(self, address, data):
+        pass
+
+
+class PacketHandler(object):
+
+    def handle(self, packet):
         pass

@@ -72,7 +72,8 @@ class ClientHandler(ConnectionHandler):
             try:
                 while(True):
                     index = self._request.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
-                    self._handler.handle(base64.b64decode(self._request[0:index]))
+                    data = self._decode_data(self._request[0:index])
+                    self._handler.handle(self._connection.get_address(), data)
                     self._request = self._request[index + ClientHandler.EOL_LENGTH:]
             except ValueError:
                 pass
@@ -87,8 +88,13 @@ class ClientHandler(ConnectionHandler):
             self._network._remove_connection(self._connection)
 
     def send(self, data):
-        self._response.append(base64.b64encode(data) + ClientHandler.EOL)
+        self._response.append(self._encode_data(data) + ClientHandler.EOL)
 
+    def _encode_data(self, data):
+        return base64.b64encode(data)
+
+    def _decode_data(self, data):
+        return base64.b64decode(data)
 
 if __name__ == '__main__':
     import time
