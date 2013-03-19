@@ -12,7 +12,7 @@ class PacketDispatcher(DataHandler):
         self._handlers = {}
         self._transformer = packet_transformer
 
-    def add_listener(self, packet_type, packet_handler):
+    def register_handler(self, packet_type, packet_handler):
         self._handlers[packet_type] = packet_handler
 
     def handle(self, address, data):
