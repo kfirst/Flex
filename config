@@ -1,5 +1,11 @@
+#配置文件
 {
+	#log组件的配置，包括记录的级别、格式和输出的方式等
 	"log": {
-		"level": "error"
+		"level": "WARNING",
+		"format": "%(asctime)-25s%(levelname)-10s[%(name)-s] %(message)s",
+		"handler": {
+			"StreamHandler": []
+		}
 	}
 }

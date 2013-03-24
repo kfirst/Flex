@@ -5,40 +5,45 @@ Created on 2013-3-19
 @author: kfirst
 '''
 
-import flex
-import inspect
-import logging
-import os
-
-_path = inspect.stack()[0][1]
-_ext_path = _path[0:_path.rindex(os.sep)]
-_path = os.path.dirname(_path) + os.sep
-_ext_path = os.path.dirname(_ext_path) + os.sep
-
-def register_component(component_class, *args, **kw):
-    name = component_class.__name__
-    obj = component_class(*args, **kw)
-    setattr(flex.core, name, obj)
-
-def getLogger (name = None, moreFrames = 0):
-    if name is None:
-        name = inspect.stack()[1 + moreFrames][1]
-        if name.endswith('.py'):
-            name = name[0:-3]
-        elif name.endswith('.pyc'):
-            name = name[0:-4]
-        if name.endswith(".__init__"):
-            name = name[0:-9]
-        if name.startswith(_path):
-            name = name[len(_path):]
-        elif name.startswith(_ext_path):
-            name = name[len(_ext_path):]
-        name = name.replace(os.sep, '.')
-    return logging.getLogger(name)
-
-
 class Core(object):
 
     def __init__(self):
-        pass
+        self._components = {}
+
+    def init(self, config_path):
+        from flex import config
+        config.launch(config_path)
+        from flex import logger
+        logger.launch()
+
+    def register_component(self, component_class, *args, **kw):
+        name = component_class.__name__.lower()
+        if name in self._components:
+            raise AttributeError('Attribute [' + name + '] already exists!')
+        obj = component_class(*args, **kw)
+        self._components[name] = obj
+
+    def register_object(self, name, obj):
+        if name in self._components:
+            raise AttributeError('Attribute [' + name + '] already exists!')
+        self._components[name] = obj
+
+    def get_logger(self, name = None):
+        return self.logger_generator.get_logger(name, 1)
+
+    def __getattr__(self, name):
+        try:
+            return self._components[name]
+        except KeyError:
+            raise AttributeError('Attribute [' + name + '] is not found in Core!')
+
+
+core = Core()
+
+
+if __name__ == '__main__':
+    from flex.core import core
+    core.init('../config')
+    logger = core.get_logger()
+    logger.warning('test')
 
