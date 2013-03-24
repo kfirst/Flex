@@ -11,11 +11,9 @@ from flex.lib.network import network as N
 
 class Network(object):
 
-    def __init__(self, controller):
+    def __init__(self, address, backlog):
         self._transformer = T.PacketTransformer()
         self._dispatcher = D.PacketDispatcher(self._transformer)
-        address = controller.get_address()
-        backlog = controller.get_backlog()
         self._network = N.Network(address, backlog, self._dispatcher)
 
     def register_handler(self, packet_type, packet_handler):

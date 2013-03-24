@@ -1,11 +1,60 @@
 #配置文件
 {
-	#log组件的配置，包括记录的级别、格式和输出的方式等
-	"log": {
-		"level": "WARNING",
-		"format": "%(asctime)-25s%(levelname)-10s[%(name)-s] %(message)s",
-		"handler": {
-			"StreamHandler": []
+	"module": {
+		#log模块的配置，包括记录的级别、格式和输出的方式等信息
+		"log": {
+			#级别
+			"level": "WARNING",
+			#格式
+			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s]: %(message)s",
+			#输出方式
+			"handler": {
+				"StreamHandler": []
+			}
+		},
+		#network模块的配置，包括地址和连接数等
+		"network": {
+			"address": ["127.0.0.1", "112200"],
+			"backlog": 50
+		}
+	},
+	"topology": {
+		#controller的地址和拓扑等信息
+		"controllers": {
+			#controller的id
+			"c_01": {
+				#类型
+				"type": "flex",
+				#地址
+				"address": ["127.0.0.1", "112200"],
+				#邻接表和邻接关系
+				"neighbors": {
+					"c_01_pox": "customer",
+					"c02": "peer"
+				}
+			},
+			"c_01_pox": {
+				"type": "pox",
+				"address": ["127.0.0.1", "112201"],
+				"neighbors": {
+					"c01": "provider"
+				}
+			},
+			"c_02": {
+				"type": "flex",
+				"address": ["127.0.0.1", "112210"],
+				"neighbors": {
+					"c_02_pox": "customer",
+					"c01": "peer"
+				}
+			},
+			"c_02_pox": {
+				"type": "pox",
+				"address": ["127.0.0.1", "112211"],
+				"neighbors": {
+					"c02": "provider"
+				}
+			}
 		}
 	}
 }

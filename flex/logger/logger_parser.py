@@ -13,7 +13,7 @@ from flex.logger.logger_generator import LoggerGenerator
 class LoggerParser(ConfigParser):
 
     DEFAULT_LEVEL = 'WARNING'
-    DEFAULR_FORMAT = '%(levelname)-10s%(name)-20s%(message)s'
+    DEFAULR_FORMAT = '%(levelname)-10s[%(name)-s]: %(message)s'
     DEFAULT_HANDLER = {'StreamHandler':[]}
 
     def __init__(self):
@@ -21,11 +21,11 @@ class LoggerParser(ConfigParser):
         self._formatter = logging.Formatter
 
     def parse(self, config):
-        level_config = config.get('log.level', self.DEFAULT_LEVEL)
+        level_config = config.get('module.log.level', self.DEFAULT_LEVEL)
         self._level = self._parse_level(level_config)
-        formatter_config = config.get('log.format', self.DEFAULR_FORMAT)
+        formatter_config = config.get('module.log.format', self.DEFAULR_FORMAT)
         self._formatter = self._parse_formater(formatter_config)
-        handler_config = config.get('log.handler', self.DEFAULT_HANDLER)
+        handler_config = config.get('module.log.handler', self.DEFAULT_HANDLER)
         self._handlers = self._parse_handler(handler_config)
         for handler in self._handlers:
             handler.setFormatter(self._formatter)

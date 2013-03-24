@@ -19,13 +19,13 @@ class Core(object):
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()
         if name in self._components:
-            raise AttributeError('Attribute [' + name + '] already exists!')
+            raise AttributeError('Attribute [' + name + '] already exists in Core!')
         obj = component_class(*args, **kw)
         self._components[name] = obj
 
     def register_object(self, name, obj):
         if name in self._components:
-            raise AttributeError('Attribute [' + name + '] already exists!')
+            raise AttributeError('Attribute [' + name + '] already exists in Core!')
         self._components[name] = obj
 
     def get_logger(self, name = None):

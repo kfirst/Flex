@@ -15,8 +15,6 @@ class Config(object):
     配置文件，使用json格式存储，初始化时需要给定配置文件的路径
     '''
 
-    ERR_PREFIX = 'WARNING [Config] '
-
     def __init__(self, path):
         content = self._read_file(path)
         self._config = self._parse_content(content)
@@ -43,7 +41,10 @@ class Config(object):
             return {}
 
     def _err(self, info):
-        sys.stderr.write(self.ERR_PREFIX + info + os.linesep)
+        sys.stderr.write(('%(levelname)-10s[%(name)-s]: %(message)s' + os.linesep) % {
+                          'levelname': 'WARNING',
+                          'name': 'Config',
+                          'message': info})
 
     '''
     获取配置文件中指定key的值，key可以为多级，用‘.’分隔，如：
