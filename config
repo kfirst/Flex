@@ -16,6 +16,9 @@
 		"network": {
 			"address": ["127.0.0.1", "112200"],
 			"backlog": 50
+		},
+		"topology": {
+			"id": "c_01"
 		}
 	},
 	"topology": {
