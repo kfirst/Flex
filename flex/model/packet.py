@@ -7,10 +7,10 @@
 
 class PacketHeader(object):
 
-    def __init__(self, src, dst, type):
+    def __init__(self, src, dst, packet_type):
         self.src = src
         self.dst = dst
-        self.type = type
+        self.type = packet_type
         self.path = []
 
 
