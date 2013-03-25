@@ -7,6 +7,9 @@ socket生成器
 
 import socket
 from flex.lib.network.connection import Connection
+from flex.core import core
+
+logger = core.get_logger()
 
 class ConnectionGenerator(object):
 
@@ -18,7 +21,7 @@ class ConnectionGenerator(object):
             client.connect(address)
             return Connection(client, address, connection_handler)
         except Exception, e:
-            print e
+            logger.error(e)
             return False
 
     def get_server(self, address, backlog, connection_handler):
@@ -31,7 +34,7 @@ class ConnectionGenerator(object):
             server.setblocking(False)
             return Connection(server, address, connection_handler)
         except Exception, e:
-            print e
+            logger.error(e)
             return False
 
     def accept(self, connection, connection_handler):

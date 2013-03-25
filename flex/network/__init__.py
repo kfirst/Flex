@@ -5,4 +5,4 @@ def launch():
     config = core.config
     address = config.get('module.network.address')
     backlog = config.get('module.network.backlog')
-    core.register_component(Network, address, backlog)
+    core.register_component(Network, tuple(address), backlog)

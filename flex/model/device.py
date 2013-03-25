@@ -16,16 +16,12 @@ class Device(object):
 
 class Controller(Device):
 
-    def __init__(self, cid, address, backlog):
+    def __init__(self, cid, address):
         super(Controller, self).__init__(cid)
         self.__address = address
-        self.__backlog = backlog
 
     def get_address(self):
         return self.__address
-
-    def get_backlog(self):
-        return self.__backlog
 
 
 class Switch(Device):
