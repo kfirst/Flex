@@ -19,3 +19,11 @@ class Packet(object):
     def __init__(self, header, content):
         self.header = header
         self.content = content
+
+class PacketContent(object):
+
+    def __init__(self, ttype, controller, content):
+        self.type = ttype
+        self.controller = controller
+        self.content = content
+
