@@ -6,7 +6,7 @@
 			#级别
 			"level": "WARNING",
 			#格式
-			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s]: %(message)s",
+			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s](%(funcName)s): %(message)s",
 			#输出方式
 			"handler": {
 				"StreamHandler": []
@@ -14,7 +14,7 @@
 		},
 		#network模块的配置，包括地址和连接数等
 		"network": {
-			"address": ["127.0.0.1", "112200"],
+			"address": ["127.0.0.1", 12200],
 			"backlog": 50
 		},
 		"topology": {
@@ -29,7 +29,7 @@
 				#类型
 				"type": "flex",
 				#地址
-				"address": ["127.0.0.1", "112200"],
+				"address": ["127.0.0.1", 12200],
 				#邻接表和邻接关系
 				"neighbors": {
 					"c_01_pox": "customer",
@@ -38,14 +38,14 @@
 			},
 			"c_01_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", "112201"],
+				"address": ["127.0.0.1", 12201],
 				"neighbors": {
 					"c01": "provider"
 				}
 			},
 			"c_02": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112210"],
+				"address": ["127.0.0.1", 12210],
 				"neighbors": {
 					"c_02_pox": "customer",
 					"c01": "peer"
@@ -53,7 +53,7 @@
 			},
 			"c_02_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", "112211"],
+				"address": ["127.0.0.1", 12211],
 				"neighbors": {
 					"c02": "provider"
 				}

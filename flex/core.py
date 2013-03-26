@@ -15,6 +15,8 @@ class Core(object):
         config.launch(config_path)
         from flex import logger
         logger.launch()
+        from flex import network
+        network.launch()
 
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()
@@ -24,6 +26,7 @@ class Core(object):
         self._components[name] = obj
 
     def register_object(self, name, obj):
+        name = name.lower()
         if name in self._components:
             raise AttributeError('Attribute [' + name + '] already exists in Core!')
         self._components[name] = obj
