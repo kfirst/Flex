@@ -17,10 +17,10 @@ class TopoHandler(object):
         self.peer_controller = set()
         self.customer_controller = set()
         self.controller_to_address = {}
-        #self.switch = set()
-        
-        
-        
+        # self.switch = set()
+
+
+
         self.from_controller = FindHopOfController()
         self.from_switch = FindHopOfSwitch()
 
@@ -36,14 +36,9 @@ class TopoHandler(object):
             self.from_switch.modify_from_customer_controller(packet.content)
         elif packet.content.type == 2:
             self.from_switch.modify_from_pox(packet.content)
-            
+
     def next_hop_of_controller(self, controller):
-        ans = self.from_controller.find_hop(self.id, controller.__id, self.topo_of_controller)
-        if(ans == None):
-            return None
-        else:
-            con = Controller(ans, self.id, self.controller_to_address[ans])
-            return con
+        return self._controller_nexthop[controller.get_id()]
+
     def next_hop_of_switch(self, switch):
-        return  self.from_switch.find_hop(switch.__id, self.topo_of_controller)
-    
+        pass

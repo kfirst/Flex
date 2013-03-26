@@ -20,10 +20,10 @@ class Packet(object):
         self.header = header
         self.content = content
 
-class PacketContent(object):
 
-    def __init__(self, ttype, controller, content):
-        self.type = ttype
+class TopologyPacketContent(object):
+
+    def __init__(self, controller, switches_added, switches_removed):
         self.controller = controller
-        self.content = content
-
+        self.switches_added = switches_added
+        self.switches_removed = switches_removed
