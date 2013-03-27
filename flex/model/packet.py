@@ -6,7 +6,9 @@
 '''
 
 class PacketHeader(object):
-
+    
+    TOPO = 1234
+     
     def __init__(self, src, dst, packet_type):
         self.src = src
         self.dst = dst
