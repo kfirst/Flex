@@ -27,9 +27,12 @@ class Network(object):
         connection = self._connection_pool.get(address)
         if not connection:
             connection = self._generator.get_client(address, ClientHandler(self, self._handler))
-            self._connection_pool.add(connection.get_address(), connection)
+            if not connection:
+                return False
+            self._connection_pool.add(address, connection)
             self._monitor.add(connection)
         connection.get_handler().send(data)
+        return True
 
     def schedule(self, timeout = 0):
         self._monitor.schedule(timeout)
