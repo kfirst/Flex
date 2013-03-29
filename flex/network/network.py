@@ -9,6 +9,7 @@ from flex.lib import packet_transformer as T
 from flex.lib import packet_dispatcher as D
 from flex.lib.network import network as N
 from flex.core import core
+from flex.base.exception import ConnectFail
 
 logger = core.get_logger()
 
@@ -23,9 +24,14 @@ class Network(object):
         self._dispatcher.register_handler(packet_type, packet_handler)
 
     def send(self, controller, packet):
-        logger.debug(self.__name__ + '[Sending Packet to ' + controller + ']' + packet)
+        logger.debug('[Sending Packet to ' + controller + ']' + packet)
         data = self._transformer.packet_to_data(packet)
-        self._network.send(controller.get_address(), data)
+        try:
+            self._network.send(controller.get_address(), data)
+        except ConnectFail, e:
+            logger.warning(e)
+            return False
+        return True
 
     def schedule(self, timeout):
         self._network.schedule(timeout)

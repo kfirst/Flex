@@ -9,3 +9,6 @@ class ControllerNotFound(Exception):
 
 class SwitchNotFound(Exception):
     pass
+
+class ConnectFail(Exception):
+    pass

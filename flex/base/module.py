@@ -5,7 +5,7 @@ Created on 2013-3-27
 @author: kfirst
 '''
 
-class module(object):
+class Module(object):
 
     '''
     模块必须实现的方法，用于和其他模块交互。

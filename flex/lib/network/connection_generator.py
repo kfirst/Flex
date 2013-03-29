@@ -7,9 +7,7 @@ socket生成器
 
 import socket
 from flex.lib.network.connection import Connection
-from flex.core import core
-
-logger = core.get_logger()
+from flex.base.exception import ConnectFail
 
 class ConnectionGenerator(object):
 
@@ -19,10 +17,10 @@ class ConnectionGenerator(object):
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
             client.connect(address)
+            client.setblocking(False)
             return Connection(client, address, connection_handler)
         except Exception, e:
-            logger.error(e)
-            return False
+            raise ConnectFail('Can not get connection of ' + address.__str__() + ', because of ' + e)
 
     def get_server(self, address, backlog, connection_handler):
         try:
@@ -34,8 +32,7 @@ class ConnectionGenerator(object):
             server.setblocking(False)
             return Connection(server, address, connection_handler)
         except Exception, e:
-            logger.error(e)
-            return False
+            raise ConnectFail('Can not get server of ' + address.__str__() + ', because of ' + e)
 
     def accept(self, connection, connection_handler):
         sock, address = connection.get_sock().accept()

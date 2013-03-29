@@ -7,11 +7,11 @@ Created on 2013-3-19
 from flex.model.device import Controller
 from flex.model.packet import PacketHeader, Packet, TopologyPacketContent
 from flex.core import core
-from flex.base.module import module
+from flex.base.module import Module
 from flex.base.exception import ControllerNotFound, SwitchNotFound
 
 
-class TopoHandler(module):
+class TopoHandler(Module):
 
     def __init__(self):
         self._controller_id = None
