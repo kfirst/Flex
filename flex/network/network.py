@@ -10,10 +10,12 @@ from flex.lib import packet_dispatcher as D
 from flex.lib.network import network as N
 from flex.core import core
 from flex.base.exception import ConnectFail
+from flex.base.module import Module
+import threading
 
 logger = core.get_logger()
 
-class Network(object):
+class Network(Module):
 
     def __init__(self, address, backlog):
         self._transformer = T.PacketTransformer()
@@ -33,5 +35,11 @@ class Network(object):
             return False
         return True
 
-    def schedule(self, timeout):
-        self._network.schedule(timeout)
+    def _schedule(self):
+        while(True):
+            self._network.schedule(-1)
+
+    def start(self):
+        thread = threading.Thread(target = self._schedule)
+        thread.setDaemon(True)
+        thread.start()

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     from flex.model.packet import Packet
     from flex.model.packet import PacketHeader
     header = PacketHeader('src', 'dst', 'type')
-    header.add_to_path('path')
+    header.path.append('path')
     p = Packet(header, 'content')
     print p.__dict__
     j = PacketTransformer().packet_to_data(p)
