@@ -8,7 +8,7 @@ from flex.model.device import Controller
 from flex.model.packet import PacketHeader, Packet, TopologyPacketContent
 from flex.core import core
 from flex.base.module import module
-from flex.base.exception import ControllerNotFound
+from flex.base.exception import ControllerNotFound, SwitchNotFound
 
 
 class TopoHandler(module):
@@ -22,11 +22,10 @@ class TopoHandler(module):
         self._controller_relations = {}  # r->c
 
         self._controller_switch = {}
-
-        self._handler = {
-                        'peer':self._handler_peer,
-                        'customer':self._handler_customer
-                        }
+        self._handlers = {
+                          "peer": self._handle_peer,
+                          "customer": self._handle_customer
+                          }
 
     def start(self):
         core.network.register_handler(PacketHeader().type, self)
@@ -77,4 +76,8 @@ class TopoHandler(module):
             raise ControllerNotFound('The nexthop of ' + controller + ' is not found!')
 
     def next_hop_of_switch(self, switch):
-        return self._controller_controllers[self._controller_switch[switch.get_id()][0]]
+        try:
+            return self._controller_controllers[self._controller_switch[switch.get_id()][0]]
+        except KeyError:
+            raise SwitchNotFound('The nexthop of ' + switch + ' is not found!')
+

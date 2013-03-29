@@ -34,7 +34,6 @@ class TopologyParser(object):
     def _parse_nexthop(self, topo):
         nexthops = {}
         controller_id = self.my_id
-
         controller_step = {}
         # topo_of_controller = {}
         for cid in topo:
