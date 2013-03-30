@@ -17,16 +17,19 @@ logger = core.get_logger()
 
 class Network(Module):
 
-    def __init__(self, address, backlog):
+    def __init__(self, controller, backlog):
         self._transformer = T.PacketTransformer()
         self._dispatcher = D.PacketDispatcher(self._transformer)
-        self._network = N.Network(address, backlog, self._dispatcher)
+        self._myself = controller
+        self._network = N.Network(controller.get_address(), backlog, self._dispatcher)
 
     def register_handler(self, packet_type, packet_handler):
         self._dispatcher.register_handler(packet_type, packet_handler)
 
     def send(self, controller, packet):
-        logger.debug('[Sending Packet to ' + controller + ']' + packet)
+        packet.header.dst = controller
+        packet.header.path.append(self._myself)
+        logger.debug('Sending Packet to ' + controller + ', ' + packet)
         data = self._transformer.packet_to_data(packet)
         try:
             self._network.send(controller.get_address(), data)

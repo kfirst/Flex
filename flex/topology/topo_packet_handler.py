@@ -34,7 +34,6 @@ class TopoPacketHandler(PacketHandler):
         # network send packet
         myself = self._controllers[self._my_id]
         packet.content.controller = myself
-        packet.header.path.append(myself)
         for cid in self._neighbors_with_relation['provider']:
             self._send_packet(cid, packet)
         for cid in self._neighbors_with_relation['peer']:
@@ -64,7 +63,6 @@ class TopoPacketHandler(PacketHandler):
 
     def _send_packet(self, cid, packet):
         dst = self._controllers[cid]
-        packet.header.dst = dst
         core.network.send(dst, packet)
 
     def handle(self, packet):

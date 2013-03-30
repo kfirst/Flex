@@ -25,9 +25,9 @@ class Topology(Module):
         self._switches = {}
 
     def start(self):
-        self._network = core.network
-        self._network.register_handler(PacketHeader.TOPO, TopoPacketHandler(self))
-        self._network.register_handler(PacketHeader.HELLO, HelloPacketHandler(self))
+        network = core.network
+        network.register_handler(PacketHeader.TOPO, TopoPacketHandler(self))
+        network.register_handler(PacketHeader.HELLO, HelloPacketHandler(self))
 
     def next_hop_of_controller(self, controller):
         try:

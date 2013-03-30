@@ -37,6 +37,9 @@ class Controller(Device):
     def down(self):
         self.__status = False
 
+    def __str__(self, *args, **kwargs):
+        return object_to_string(self, self.get_id(), self.__address)
+
 
 class Switch(Device):
 
