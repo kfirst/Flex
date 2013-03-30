@@ -9,7 +9,7 @@ from flex.lib import packet_transformer as T
 from flex.lib import packet_dispatcher as D
 from flex.lib.network import network as N
 from flex.core import core
-from flex.base.exception import ConnectFail
+from flex.base.exception import ConnectFailException
 from flex.base.module import Module
 import threading
 
@@ -30,7 +30,7 @@ class Network(Module):
         data = self._transformer.packet_to_data(packet)
         try:
             self._network.send(controller.get_address(), data)
-        except ConnectFail, e:
+        except ConnectFailException, e:
             logger.warning(e)
             return False
         return True

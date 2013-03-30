@@ -4,80 +4,44 @@ Created on 2013-3-19
 @author: fzm
 '''
 
-from flex.model.device import Controller
-from flex.model.packet import PacketHeader, Packet, TopologyPacketContent
+from flex.model.packet import PacketHeader
 from flex.core import core
 from flex.base.module import Module
-from flex.base.exception import ControllerNotFound, SwitchNotFound
+from flex.base.exception import ControllerNotFoundException, SwitchNotFoundException
+from flex.topology.topo_packet_handler import TopoPacketHandler
+from flex.topology.hello_packet_handler import HelloPacketHandler
 
+logger = core.get_logger()
 
-class TopoHandler(Module):
+class Topology(Module):
 
     def __init__(self):
-        self._controller_id = None
-
-        self._controller_controllers = {}
-        self._controller_nexthop = {}
-        self._controller_neighbors = {}  # c->r
-        self._controller_relations = {}  # r->c
-
-        self._controller_switch = {}
-        self._handlers = {
-                          "peer": self._handle_peer,
-                          "customer": self._handle_customer
-                          }
+        self._my_id = None
+        self._controllers = {}
+        self._nexthop_of_controller = {}
+        self._relation_of_neighbor = {}  # c->r
+        self._neighbors_with_relation = {}  # r->c
+        self._controllers_of_switch = {}
+        self._switches = {}
 
     def start(self):
-        core.network.register_handler(PacketHeader().type, self)
-
-    def _handler_peer(self, packet):
-        cid_src = packet.content.controller.get_id()
-        for sid in packet.content.switches_added:
-            if self._controller_switch.has_key(sid):
-                self._controller_switch[sid].append(cid_src)
-            else:
-                self._controller_switch[sid] = []
-                self._controller_switch[sid].append(cid_src)
-        for sid in packet.content.switches_removed:
-            self._controller_switch[sid].remove(cid_src)
-    def _handler_customer(self, packet):
-        cid_src = packet.content.controller.get_id()
-        for sid in packet.content.switches_added:
-            if self._controller_switch.has_key(sid):
-                self._controller_switch[sid].insert(0, cid_src)
-            else:
-                self._controller_switch[sid] = []
-                self._controller_switch[sid].append(cid_src)
-        for sid in packet.content.switches_removed:
-            self._controller_switch[sid].remove(cid_src)
-        # network send packet
-        packet.content.controller = self._controller_controllers[cid_src]
-        packet.header.path.append(self._controller_controllers[cid_src])
-
-        for cid in self._controller_relations['provider']:
-            packet.header.dst = self._controller_controllers[cid]
-            core.network.send(self._controller_controllers[cid], packet)
-        for cid in self._controller_relations['peer']:
-            packet.header.dst = self._controller_controllers[cid]
-            core.network.send(self._controller_controllers[cid], packet)
-
-    def handle(self, packet):
-        cid = packet.content.controller.get_id()
-        if self._controller_neighbors[cid] == 'peer':
-            self.handle['peer'](packet)
-
-        elif self._controller_neighbors[cid] == 'customer':
-            self.handle['customer'](packet)
+        self._network = core.network
+        self._network.register_handler(PacketHeader.TOPO, TopoPacketHandler(self))
+        self._network.register_handler(PacketHeader.HELLO, HelloPacketHandler(self))
 
     def next_hop_of_controller(self, controller):
         try:
-            return self._controller_controllers[self._controller_nexthop[controller.get_id()]]
+            return self._controllers[self._nexthop_of_controller[controller.get_id()]]
         except KeyError:
-            raise ControllerNotFound('The nexthop of ' + controller + ' is not found!')
+            raise ControllerNotFoundException('The nexthop of ' + controller + ' is not found!')
 
     def next_hop_of_switch(self, switch):
         try:
-            return self._controller_controllers[self._controller_switch[switch.get_id()][0]]
+            for cid in self._controllers_of_switch[switch.get_id()]:
+                controller = self._controllers[cid]
+                if controller.is_up():
+                    return controller
         except KeyError:
-            raise SwitchNotFound('The nexthop of ' + switch + ' is not found!')
-
+            raise SwitchNotFoundException('The nexthop of ' + switch + ' is not found!')
+        else:
+            raise SwitchNotFoundException('The nexthop of ' + switch + ' is not found!')

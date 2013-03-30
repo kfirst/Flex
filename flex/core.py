@@ -5,18 +5,30 @@ Created on 2013-3-19
 @author: kfirst
 '''
 
-class Core(object):
+from flex.base.module import Module
+
+class Core(Module):
 
     def __init__(self):
         self._components = {}
+        self._config_path = '../config'
 
-    def init(self, config_path):
+    def set_config_path(self, config_path):
+        self._config_path = config_path
+
+    def start(self):
         from flex import config
-        config.launch(config_path)
+        config.launch(self._config_path)
         from flex import logger
         logger.launch()
-        from flex import network
-        network.launch()
+        from flex import event
+        event.launch()
+        components = self.config.get('module.core.module', [])
+        for component in components:
+            component_class = __import__(component, fromlist = [''])
+            component_class.launch()
+        for component in self._components:
+            self._components[component].start()
 
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()
@@ -46,7 +58,7 @@ core = Core()
 
 if __name__ == '__main__':
     from flex.core import core
-    core.init('../config')
+    core.start()
     logger = core.get_logger()
     logger.warning('test')
 

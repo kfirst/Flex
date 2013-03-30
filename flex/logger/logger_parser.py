@@ -6,11 +6,10 @@ Created on 2013-3-19
 @author: kfirst
 '''
 
-from flex.base.parser import ConfigParser
 import logging
 from flex.logger.logger_generator import LoggerGenerator
 
-class LoggerParser(ConfigParser):
+class LoggerParser(object):
 
     DEFAULT_LEVEL = 'WARNING'
     DEFAULR_FORMAT = '%(levelname)-10s[%(name)-s]: %(message)s'

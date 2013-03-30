@@ -9,8 +9,9 @@ Created on 2013-3-19
 import json
 import os
 import sys
+from flex.base.module import Module
 
-class Config(object):
+class Config(Module):
     '''
     配置文件，使用json格式存储，初始化时需要给定配置文件的路径
     '''

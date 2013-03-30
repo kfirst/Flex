@@ -26,3 +26,9 @@ class PacketHandler(object):
 
     def handle(self, packet):
         pass
+
+
+class EventHandler(object):
+
+    def handle(self, event):
+        pass

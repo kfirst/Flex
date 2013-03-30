@@ -8,6 +8,7 @@ Created on 2013-3-19
 import inspect
 import logging
 import os
+from flex.base.module import Module
 
 _path = inspect.stack()[0][1]
 _path = _path[0:_path.rindex(os.sep)]
@@ -16,7 +17,7 @@ _path = os.path.dirname(_path) + os.sep
 _ext_path = os.path.dirname(_ext_path) + os.sep
 
 
-class LoggerGenerator(object):
+class LoggerGenerator(Module):
 
     def __init__(self, level, handlers):
         self._level = level

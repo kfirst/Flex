@@ -4,11 +4,11 @@ Created on 2013-3-29
 @author: fzm
 '''
 
-class ControllerNotFound(Exception):
+class ControllerNotFoundException(Exception):
     pass
 
-class SwitchNotFound(Exception):
+class SwitchNotFoundException(Exception):
     pass
 
-class ConnectFail(Exception):
+class ConnectFailException(Exception):
     pass

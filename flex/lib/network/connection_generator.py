@@ -7,7 +7,7 @@ socket生成器
 
 import socket
 from flex.lib.network.connection import Connection
-from flex.base.exception import ConnectFail
+from flex.base.exception import ConnectFailException
 
 class ConnectionGenerator(object):
 
@@ -20,7 +20,7 @@ class ConnectionGenerator(object):
             client.setblocking(False)
             return Connection(client, address, connection_handler)
         except Exception, e:
-            raise ConnectFail('Can not get connection of ' + address.__str__() + ', because of ' + e)
+            raise ConnectFailException('Can not get connection of ' + address.__str__() + ', because of ' + e.__str__())
 
     def get_server(self, address, backlog, connection_handler):
         try:
@@ -32,7 +32,7 @@ class ConnectionGenerator(object):
             server.setblocking(False)
             return Connection(server, address, connection_handler)
         except Exception, e:
-            raise ConnectFail('Can not get server of ' + address.__str__() + ', because of ' + e)
+            raise ConnectFailException('Can not get server of ' + address.__str__() + ', because of ' + e.__str__())
 
     def accept(self, connection, connection_handler):
         sock, address = connection.get_sock().accept()

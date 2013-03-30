@@ -1,6 +1,12 @@
 #配置文件
 {
 	"module": {
+		"core": {
+			#core模块启动后需要载入的模块列表
+			"module": [
+				"flex.network"
+			]
+		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
 		"log": {
 			#级别
@@ -19,6 +25,7 @@
 		}
 	},
 	"topology": {
+		#自己的id
 		"my_id": "c_01",
 		#controller的地址和拓扑等信息
 		"controllers": {
