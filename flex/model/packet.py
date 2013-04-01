@@ -27,8 +27,8 @@ class PacketHeader(object):
 
 class Packet(object):
 
-    def __init__(self, header, content):
-        self.header = header
+    def __init__(self, packet_type, content):
+        self.header = PacketHeader(None, None, packet_type)
         self.content = content
 
     def __str__(self, *args, **kwargs):
@@ -48,6 +48,5 @@ class TopologyPacketContent(object):
 if __name__ == '__main__':
     from flex.model.device import Controller
     controller = Controller('cid', ('ip', 'port'))
-    header = PacketHeader(controller, controller, 'packet_type')
-    packet = Packet(header, 'content')
+    packet = Packet('packet_header', 'content')
     print packet

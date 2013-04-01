@@ -27,6 +27,8 @@ class Network(Module):
         self._dispatcher.register_handler(packet_type, packet_handler)
 
     def send(self, controller, packet):
+        if(packet.header.src == None):
+            packet.header.src = self._myself
         packet.header.dst = controller
         packet.header.path.append(self._myself)
         logger.debug('Sending Packet to ' + controller + ', ' + packet)
