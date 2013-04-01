@@ -20,10 +20,10 @@ class PacketHeader(object):
 
     def __str__(self, *args, **kwargs):
         return object_to_string(self,
-                    type = self.type,
-                    src = self.src,
-                    dst = self.dst,
-                    path = self.path)
+                    type=self.type,
+                    src=self.src,
+                    dst=self.dst,
+                    path=self.path)
 
 class Packet(object):
 
@@ -33,8 +33,8 @@ class Packet(object):
 
     def __str__(self, *args, **kwargs):
         return object_to_string(self,
-                    header = self.header,
-                    content = self.content)
+                    header=self.header,
+                    content=self.content)
 
 
 class TopologyPacketContent(object):
@@ -43,6 +43,14 @@ class TopologyPacketContent(object):
         self.controller = controller
         self.switches_added = switches_added
         self.switches_removed = switches_removed
+
+class HelloPacketContent(object):
+
+    def __init__(self, controller):
+        self.if_response = False
+        self.controller = controller
+
+
 
 
 if __name__ == '__main__':

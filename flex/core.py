@@ -23,11 +23,15 @@ class Core(Module):
         logger.launch()
         from flex import event
         event.launch()
+        self._logger = self.get_logger()
+
         components = self.config.get('module.core.module', [])
         for component in components:
-            component_class = __import__(component, fromlist = [''])
+            self._logger.debug('lanch ' + component)
+            component_class = __import__(component, fromlist=[''])
             component_class.launch()
         for component in self._components:
+            self._logger.debug('start ' + component)
             self._components[component].start()
 
     def register_component(self, component_class, *args, **kw):
@@ -43,7 +47,7 @@ class Core(Module):
             raise AttributeError('Attribute [' + name + '] already exists in Core!')
         self._components[name] = obj
 
-    def get_logger(self, name = None):
+    def get_logger(self, name=None):
         return self.logger_generator.get_logger(name, 1)
 
     def __getattr__(self, name):
