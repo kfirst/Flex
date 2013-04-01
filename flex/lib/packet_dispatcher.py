@@ -5,6 +5,9 @@ Created on 2013-3-18
 '''
 
 from flex.base.handler import DataHandler
+from flex.core import core
+
+logger = core.get_logger()
 
 class PacketDispatcher(DataHandler):
 
@@ -18,4 +21,5 @@ class PacketDispatcher(DataHandler):
     def handle(self, address, data):
         packet = self._transformer.data_to_packet(data)
         handler = self._handlers[packet.header.type]
+        logger.debug('Received ' + str(packet.header.type) + ' ' + str(packet))
         return handler.handle(packet)

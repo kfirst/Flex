@@ -20,7 +20,6 @@ class Network(object):
         self._monitor = ConnectionMonitor()
         self._handler = data_handler
         server = self._generator.get_server(address, backlog, ServerHandler(self))
-        self._connection_pool.add(address, server);
         self._monitor.add(server);
 
     def send(self, address, data):
@@ -31,7 +30,7 @@ class Network(object):
             self._monitor.add(connection)
         connection.get_handler().send(data)
 
-    def schedule(self, timeout = 0):
+    def schedule(self, timeout=0):
         self._monitor.schedule(timeout)
 
     def _accept_connection(self, connection, event):

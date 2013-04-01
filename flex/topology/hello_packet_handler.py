@@ -26,6 +26,7 @@ class HelloPacketHandler(PacketHandler):
         return getattr(self._topo, name)
 
     def handle(self, packet):
+        logger.debug('Hello packet received')
         if not packet.content.if_response:
             hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
             hello_packet_content.if_response = True

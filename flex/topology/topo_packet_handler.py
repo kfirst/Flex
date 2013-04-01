@@ -66,6 +66,7 @@ class TopoPacketHandler(PacketHandler):
         core.network.send(dst, packet)
 
     def handle(self, packet):
+        logger.debug('Topo packet received')
         cid = packet.content.controller.get_id()
         try:
             relation = self._relation_of_neighbor[cid]

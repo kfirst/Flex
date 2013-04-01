@@ -33,7 +33,7 @@ class Topology(Module):
         try:
             return self._controllers[self._nexthop_of_controller[controller.get_id()]]
         except KeyError:
-            raise ControllerNotFoundException('The nexthop of ' + controller + ' is not found!')
+            raise ControllerNotFoundException('The nexthop of ' + str(controller) + ' is not found!')
 
     def next_hop_of_switch(self, switch):
         try:
@@ -42,6 +42,6 @@ class Topology(Module):
                 if controller.is_up():
                     return controller
         except KeyError:
-            raise SwitchNotFoundException('The nexthop of ' + switch + ' is not found!')
+            raise SwitchNotFoundException('The nexthop of ' + str(switch) + ' is not found!')
         else:
-            raise SwitchNotFoundException('The nexthop of ' + switch + ' is not found!')
+            raise SwitchNotFoundException('The nexthop of ' + str(switch) + ' is not found!')

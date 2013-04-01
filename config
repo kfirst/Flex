@@ -33,58 +33,58 @@
 			#controller的id
 			"c_01": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112200"],
+				"address": ["127.0.0.1", 12200],
 				"neighbors": {
 					"c_01_pox": "customer",
-					"c02": "peer",
-					"c_02_pox": "customer"
+					"c02": "provider"
 				}
 			},
 			"c_01_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", "112201"],
+				"address": ["127.0.0.1", 12201],
 				"neighbors": {
 					"c01": "provider",
-					"c01": "provider",
+					"c_01": "provider",
 					"c03":"provider"
 				}
 			},
 			"c_02": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112210"],
+				"address": ["127.0.0.1", 12210],
 				"neighbors": {
 					"c_02_pox": "customer",
-					"c01": "peer"
+					"c01": "provider",
+					"c02": "provider"
 				}
 			},
 			"c_02_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", "112211"],
+				"address": ["127.0.0.1", 12211],
 				"neighbors": {
-					"c02": "provider",
 					"c_02": "provider",
 					"c01": "provider"
 				}
 			},
 			"c01": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112211"],
+				"address": ["127.0.0.1", 12211],
 				"neighbors": {
-					"c_02": "peer",
-					"c_01_pox": "customer"
+					"c_02": "customer",
+					"c_01_pox": "customer",
+					"c_02_pox": "customer"
 				}
 			},
 			"c02": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112211"],
+				"address": ["127.0.0.1", 12211],
 				"neighbors": {
-					"c_01": "peer",
-					"c_02_pox": "customer"
+					"c_01": "customer",
+					"c_02": "customer"
 				}
 			},
 			"c03": {
 				"type": "flex",
-				"address": ["127.0.0.1", "112211"],
+				"address": ["127.0.0.1", 11221],
 				"neighbors": {
 					"c_01_pox": "customer"
 				}
