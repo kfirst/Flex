@@ -9,4 +9,6 @@ core.set_config_path('../../config')
 core.start()
 topology = core.topology
 
+# topology.next_hop_of_controller()
+
 

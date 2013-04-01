@@ -18,12 +18,16 @@ class PacketHeader(object):
         self.type = packet_type
         self.path = []
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self,
                     type=self.type,
                     src=self.src,
                     dst=self.dst,
                     path=self.path)
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class Packet(object):
 
@@ -31,10 +35,13 @@ class Packet(object):
         self.header = PacketHeader(None, None, packet_type)
         self.content = content
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self,
                     header=self.header,
                     content=self.content)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class TopologyPacketContent(object):
@@ -44,12 +51,16 @@ class TopologyPacketContent(object):
         self.switches_added = switches_added
         self.switches_removed = switches_removed
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self,
                                 controller=self.controller,
                                 switches_added=self.switches_added,
                                 switches_removed=self.switches_removed
                                 )
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class HelloPacketContent(object):
 
@@ -57,13 +68,14 @@ class HelloPacketContent(object):
         self.if_response = False
         self.controller = controller
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self,
                                 if_response=self.if_response,
                                 controller=self.controller
                                 )
 
-
+    def __repr__(self):
+        return self.__str__()
 
 
 if __name__ == '__main__':

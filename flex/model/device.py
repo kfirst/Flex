@@ -14,8 +14,11 @@ class Device(object):
     def get_id(self):
         return self.__id
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self, self.__id)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class Controller(Device):
@@ -37,7 +40,7 @@ class Controller(Device):
     def down(self):
         self.__status = False
 
-    def __str__(self, *args, **kwargs):
+    def __str__(self):
         return object_to_string(self, self.get_id(), self.__address)
 
 
