@@ -22,12 +22,12 @@ class TopoPacketHandler(PacketHandler):
     def __getattr__(self, name):
         return getattr(self._topo, name)
 
-    def _handler_peer(self, packet):
+    def _handle_peer(self, packet):
         cid_src = packet.content.controller.get_id()
         self._add_switches(cid_src, packet.content.switches_added, True)
         self._remove_switches(cid_src, packet.content.switches_removed)
 
-    def _handler_customer(self, packet):
+    def _handle_customer(self, packet):
         cid_src = packet.content.controller.get_id()
         self._add_switches(cid_src, packet.content.switches_added, False)
         self._remove_switches(cid_src, packet.content.switches_removed)

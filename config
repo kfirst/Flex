@@ -32,26 +32,26 @@
 		"controllers": {
 			#controller的id
 			"c_01": {
-				#类型
 				"type": "flex",
-				#地址
-				"address": ["127.0.0.1", 12200],
-				#邻接表和邻接关系
+				"address": ["127.0.0.1", "112200"],
 				"neighbors": {
 					"c_01_pox": "customer",
-					"c02": "peer"
+					"c02": "peer",
+					"c_02_pox": "customer"
 				}
 			},
 			"c_01_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", 12201],
+				"address": ["127.0.0.1", "112201"],
 				"neighbors": {
-					"c01": "provider"
+					"c01": "provider",
+					"c01": "provider",
+					"c03":"provider"
 				}
 			},
 			"c_02": {
 				"type": "flex",
-				"address": ["127.0.0.1", 12210],
+				"address": ["127.0.0.1", "112210"],
 				"neighbors": {
 					"c_02_pox": "customer",
 					"c01": "peer"
@@ -59,9 +59,40 @@
 			},
 			"c_02_pox": {
 				"type": "pox",
-				"address": ["127.0.0.1", 12211],
+				"address": ["127.0.0.1", "112211"],
 				"neighbors": {
-					"c02": "provider"
+					"c02": "provider",
+					"c_02": "provider",
+					"c01": "provider"
+				}
+			},
+			"c01": {
+				"type": "flex",
+				"address": ["127.0.0.1", "112211"],
+				"neighbors": {
+					"c_02": "peer",
+					"c_01_pox": "customer"
+				}
+			},
+			"c02": {
+				"type": "flex",
+				"address": ["127.0.0.1", "112211"],
+				"neighbors": {
+					"c_01": "peer",
+					"c_02_pox": "customer"
+				}
+			},
+			"c03": {
+				"type": "flex",
+				"address": ["127.0.0.1", "112211"],
+				"neighbors": {
+					"c_01_pox": "customer"
+				}
+			},
+			"c04": {
+				"type": "flex",
+				"address": ["127.0.0.1", "112211"],
+				"neighbors": {
 				}
 			}
 		}

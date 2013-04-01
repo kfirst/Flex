@@ -13,4 +13,6 @@ def launch():
     topo._relation_of_neighbor = topology_parser.neighbors
     topo._neighbors_with_relation = topology_parser.relations
 
+    print topo._relation_of_neighbor
+
     core.register_object('topology', topo)

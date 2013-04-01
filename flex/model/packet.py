@@ -44,11 +44,24 @@ class TopologyPacketContent(object):
         self.switches_added = switches_added
         self.switches_removed = switches_removed
 
+    def __str__(self, *args, **kwargs):
+        return object_to_string(self,
+                                controller=self.controller,
+                                switches_added=self.switches_added,
+                                switches_removed=self.switches_removed
+                                )
+
 class HelloPacketContent(object):
 
     def __init__(self, controller):
         self.if_response = False
         self.controller = controller
+
+    def __str__(self, *args, **kwargs):
+        return object_to_string(self,
+                                if_response=self.if_response,
+                                controller=self.controller
+                                )
 
 
 
