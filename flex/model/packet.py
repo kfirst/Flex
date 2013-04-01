@@ -9,8 +9,8 @@ from flex.lib.util import object_to_string
 
 class PacketHeader(object):
 
-    TOPO = 1000
-    HELLO = 2000
+    TOPO = 'topo'
+    HELLO = 'hello'
 
     def __init__(self, src, dst, packet_type):
         self.src = src
@@ -20,10 +20,10 @@ class PacketHeader(object):
 
     def __str__(self):
         return object_to_string(self,
-                    type=self.type,
-                    src=self.src,
-                    dst=self.dst,
-                    path=self.path)
+                    type = self.type,
+                    src = self.src,
+                    dst = self.dst,
+                    path = self.path)
 
     def __repr__(self):
         return self.__str__()
@@ -37,8 +37,8 @@ class Packet(object):
 
     def __str__(self):
         return object_to_string(self,
-                    header=self.header,
-                    content=self.content)
+                    header = self.header,
+                    content = self.content)
 
     def __repr__(self):
         return self.__str__()
@@ -53,9 +53,9 @@ class TopologyPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                                controller=self.controller,
-                                switches_added=self.switches_added,
-                                switches_removed=self.switches_removed
+                                controller = self.controller,
+                                switches_added = self.switches_added,
+                                switches_removed = self.switches_removed
                                 )
 
     def __repr__(self):
@@ -70,8 +70,8 @@ class HelloPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                                if_response=self.if_response,
-                                controller=self.controller
+                                if_response = self.if_response,
+                                controller = self.controller
                                 )
 
     def __repr__(self):

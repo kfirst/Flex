@@ -30,7 +30,9 @@ class Network(Module):
         if(packet.header.src == None):
             packet.header.src = self._myself
         packet.header.dst = controller
-        packet.header.path.append(self._myself)
+        path = packet.header.path
+        if not path or path[-1] != self._myself:
+            path.append(self._myself)
         logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
         data = self._transformer.packet_to_data(packet)
         try:
@@ -45,6 +47,6 @@ class Network(Module):
             self._network.schedule(-1)
 
     def start(self):
-        thread = threading.Thread(target=self._schedule)
+        thread = threading.Thread(target = self._schedule)
         thread.setDaemon(True)
         thread.start()

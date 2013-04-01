@@ -52,4 +52,4 @@ class Switch(Device):
 
 if __name__ == '__main__':
     controller = Controller('cid', 'address')
-    print controller
+    print [controller]

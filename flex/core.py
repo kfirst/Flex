@@ -28,7 +28,7 @@ class Core(Module):
         components = self.config.get('module.core.module', [])
         for component in components:
             self._logger.debug('lanch ' + component)
-            component_class = __import__(component, fromlist=[''])
+            component_class = __import__(component, fromlist = [''])
             component_class.launch()
         for component in self._components:
             self._logger.debug('start ' + component)
@@ -47,8 +47,8 @@ class Core(Module):
             raise AttributeError('Attribute [' + name + '] already exists in Core!')
         self._components[name] = obj
 
-    def get_logger(self, name=None):
-        return self.logger_generator.get_logger(name, 1)
+    def get_logger(self, name = None):
+        return self.logger.get_logger(name, 1)
 
     def __getattr__(self, name):
         try:

@@ -42,3 +42,6 @@ class LoggerGenerator(Module):
         for handler in self._handlers:
             logger.addHandler(handler)
         return logger
+
+    def get_level(self):
+        return self._level
