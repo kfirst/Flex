@@ -21,13 +21,13 @@
 		},
 		#network模块的配置，包括地址和连接数等
 		"network": {
-			"address": ["127.0.0.1", 12200],
+			"address": ["127.0.0.1", 12210],
 			"backlog": 50
 		}
 	},
 	"topology": {
 		#自己的id
-		"my_id": "c_01",
+		"my_id": "c_02",
 		#controller的地址和拓扑等信息
 		"controllers": {
 			#controller的id
@@ -36,7 +36,8 @@
 				"address": ["127.0.0.1", 12200],
 				"neighbors": {
 					"c_01_pox": "customer",
-					"c02": "provider"
+					"c02": "provider",
+					"c_02": "peer"
 				}
 			},
 			"c_01_pox": {
@@ -45,7 +46,8 @@
 				"neighbors": {
 					"c01": "provider",
 					"c_01": "provider",
-					"c03":"provider"
+					"c03":"provider",
+					"c_02": "provider"
 				}
 			},
 			"c_02": {
@@ -54,7 +56,9 @@
 				"neighbors": {
 					"c_02_pox": "customer",
 					"c01": "provider",
-					"c02": "provider"
+					"c02": "provider",
+					"c_01": "peer",
+					"c_01_pox": "customer"
 				}
 			},
 			"c_02_pox": {
@@ -71,7 +75,8 @@
 				"neighbors": {
 					"c_02": "customer",
 					"c_01_pox": "customer",
-					"c_02_pox": "customer"
+					"c_02_pox": "customer",
+					"c02": "peer"
 				}
 			},
 			"c02": {
@@ -79,7 +84,8 @@
 				"address": ["127.0.0.1", 12211],
 				"neighbors": {
 					"c_01": "customer",
-					"c_02": "customer"
+					"c_02": "customer",
+					"c01": "peer"
 				}
 			},
 			"c03": {

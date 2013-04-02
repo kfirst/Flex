@@ -39,27 +39,29 @@ class TopoPacketHandler(PacketHandler):
         for cid in self._neighbors_with_relation['peer']:
             self._send_packet(cid, packet)
 
-    def _add_switches(self, cid, sids, at_end):
-        for sid in sids:
+    def _add_switches(self, cid, sws, at_end):
+        for sw in sws:
             try:
-                if at_end:
-                    self._controllers_of_switch[sid].append(cid)
-                else:
-                    self._controllers_of_switch[sid].insert(0, cid)
+                if cid not in self._controllers_of_switch[sw.get_id()]:
+                    if at_end:
+                        self._controllers_of_switch[sw.get_id()].append(cid)
+                    else:
+                        self._controllers_of_switch[sw.get_id()].insert(0, cid)
             except KeyError:
-                self._controllers_of_switch[sid] = [cid]
-                self._switches[sid] = Switch(sid)
+                self._controllers_of_switch[sw.get_id()] = [cid]
+                self._switches[sw.get_id()] = sw
 
-    def _remove_switches(self, cid, sids):
-        for sid in sids:
+    def _remove_switches(self, cid, sws):
+        for sw in sws:
             try:
-                controllers = self._controllers_of_switch[sid]
-                controllers.remove(cid)
+                controllers = self._controllers_of_switch[sw.get_id()]
+                if cid in controllers:
+                    controllers.remove(cid)
                 if(not controllers):
-                    del self._controllers_of_switch[sid]
-                    del self._switches[sid]
+                    del self._controllers_of_switch[sw.get_id()]
+                    del self._switches[sw.get_id()]
             except KeyError:
-                logger.warning('Switch(' + sid + ') is not found!');
+                logger.warning('Switch(' + str(sw) + ') is not found!');
 
     def _send_packet(self, cid, packet):
         dst = self._controllers[cid]
