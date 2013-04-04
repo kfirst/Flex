@@ -7,7 +7,7 @@ Created on 2013-3-19
 '''
 
 import logging
-from flex.logger.logger_generator import LoggerGenerator
+from flex.logger.logger import Logger
 
 class LoggerParser(object):
 
@@ -28,7 +28,7 @@ class LoggerParser(object):
         self._handlers = self._parse_handler(handler_config)
         for handler in self._handlers:
             handler.setFormatter(self._formatter)
-        return LoggerGenerator(self._level, self._handlers)
+        return Logger(self._level, self._handlers)
 
     def _parse_level(self, value):
         return getattr(logging, value)

@@ -53,10 +53,9 @@ class TopologyPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                                controller = self.controller,
-                                switches_added = self.switches_added,
-                                switches_removed = self.switches_removed
-                                )
+                    controller = self.controller,
+                    switches_added = self.switches_added,
+                    switches_removed = self.switches_removed)
 
     def __repr__(self):
         return self.__str__()
@@ -64,15 +63,14 @@ class TopologyPacketContent(object):
 
 class HelloPacketContent(object):
 
-    def __init__(self, controller):
-        self.if_response = False
+    def __init__(self, controller, response = False):
+        self.response = response
         self.controller = controller
 
     def __str__(self):
         return object_to_string(self,
-                                if_response = self.if_response,
-                                controller = self.controller
-                                )
+                    if_response = self.response,
+                    controller = self.controller)
 
     def __repr__(self):
         return self.__str__()
