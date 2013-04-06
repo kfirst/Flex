@@ -23,8 +23,10 @@ class Core(Module):
         logger.launch()
         from flex import event
         event.launch()
-        self._logger = self.get_logger()
+        from flex import myself
+        myself.launch()
 
+        self._logger = self.get_logger()
         components = self.config.get('module.core.module', [])
         for component in components:
             self._logger.debug('Lanch ' + component)
@@ -51,6 +53,7 @@ class Core(Module):
         return self.logger.get_logger(name, 1)
 
     def __getattr__(self, name):
+        name = name.lower()
         try:
             return self._components[name]
         except KeyError:

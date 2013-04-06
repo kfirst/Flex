@@ -33,7 +33,7 @@ class Event(Module):
     def happen(self, event):
         try:
             name = event.__class__.__name__
-            logger.debug('Event(' + name + ') happened')
+            logger.debug(str(event) + ' happened')
             handlers = self._handlers[name]
             for handler in handlers:
                 handler.handle(event)
