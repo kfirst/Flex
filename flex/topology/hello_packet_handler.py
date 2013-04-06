@@ -28,9 +28,9 @@ class HelloPacketHandler(PacketHandler):
     def handle(self, packet):
         logger.debug('Hello packet received')
         self._controllers[packet.content.controller.get_id()].up()
-        if not packet.content.if_response:
+        if not packet.content.response:
             hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
-            hello_packet_content.if_response = True
+            hello_packet_content.response = True
             hello_packet = Packet(PacketHeader.HELLO, hello_packet_content)
             core.network.send(packet.content.controller, hello_packet)
 

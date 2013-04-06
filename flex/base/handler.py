@@ -1,4 +1,6 @@
+# encoding: utf-8
 '''
+各种处理程序
 Created on 2013-3-14
 
 @author: kfirst
@@ -17,18 +19,24 @@ class ConnectionHandler(object):
 
 
 class DataHandler(object):
-
-    def handle(self, address, data):
+    '''
+    处理网络传输信息的Handler，功能一般是将网络传输的信息转换为Packet结构
+    '''
+    def handle(self, data):
         pass
 
 
 class PacketHandler(object):
-
+    '''
+    处理Packet的Handler，可以注册在Network模块中用于处理接收到的Packet
+    '''
     def handle(self, packet):
         pass
 
 
 class EventHandler(object):
-
+    '''
+    处理事件的Handler，可以注册在Event模块处理相应的事件
+    '''
     def handle(self, event):
         pass

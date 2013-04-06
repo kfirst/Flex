@@ -4,6 +4,7 @@ Switch与Controller等网络设备
 
 @author: kfirst
 '''
+
 from flex.lib.util import object_to_string
 
 class Device(object):

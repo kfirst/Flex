@@ -27,11 +27,11 @@ class Core(Module):
 
         components = self.config.get('module.core.module', [])
         for component in components:
-            self._logger.debug('lanch ' + component)
+            self._logger.debug('Lanch ' + component)
             component_class = __import__(component, fromlist = [''])
             component_class.launch()
         for component in self._components:
-            self._logger.debug('start ' + component)
+            self._logger.debug('Start ' + component)
             self._components[component].start()
 
     def register_component(self, component_class, *args, **kw):

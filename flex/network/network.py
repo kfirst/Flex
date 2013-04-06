@@ -16,6 +16,9 @@ import threading
 logger = core.get_logger()
 
 class Network(Module):
+    '''
+    网络模块，负责收发Packet
+    '''
 
     def __init__(self, controller, backlog):
         self._transformer = T.PacketTransformer()
@@ -24,15 +27,16 @@ class Network(Module):
         self._network = N.Network(controller.get_address(), backlog, self._dispatcher)
 
     def register_handler(self, packet_type, packet_handler):
+        '''
+        为某种报文类型注册Handler，当收到该类型的Packet时，会调用相应Handler的handle方法
+        '''
         self._dispatcher.register_handler(packet_type, packet_handler)
 
     def send(self, controller, packet):
-        if(packet.header.src == None):
-            packet.header.src = self._myself
-        packet.header.dst = controller
-        path = packet.header.path
-        if not path or path[-1] != self._myself:
-            path.append(self._myself)
+        '''
+        向指定的Controller发送Packet
+        '''
+        self._check_header(controller, packet)
         logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
         data = self._transformer.packet_to_data(packet)
         try:
@@ -41,6 +45,20 @@ class Network(Module):
             logger.warning(e)
             return False
         return True
+
+    def dispatch(self, packet):
+        '''
+        向自己发送报文，为了简化模块的设计，模块与模块之间的通信可以只用该方法，
+        该方法会直接调用关心该类型报文的Handler，而无需经过内核转发
+        '''
+        self._dispatcher._handle(packet)
+
+    def _check_header(self, controller, packet):
+        packet.header.src = self._myself
+        packet.header.dst = controller
+        path = packet.header.path
+        if not path or path[-1] != self._myself:
+            path.append(self._myself)
 
     def _schedule(self):
         while(True):

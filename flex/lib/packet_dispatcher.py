@@ -18,8 +18,14 @@ class PacketDispatcher(DataHandler):
     def register_handler(self, packet_type, packet_handler):
         self._handlers[packet_type] = packet_handler
 
-    def handle(self, address, data):
+    def handle(self, data):
         packet = self._transformer.data_to_packet(data)
-        handler = self._handlers[packet.header.type]
-        logger.debug('Received ' + str(packet.header.type) + ' ' + str(packet))
-        return handler.handle(packet)
+        return self._handle(packet)
+
+    def _handle(self, packet):
+        try:
+            handler = self._handlers[packet.header.type]
+            logger.debug('Received Packet from ' + str(packet.header.src) + ', ' + str(packet))
+            return handler.handle(packet)
+        except KeyError:
+            logger.warning('Received undefined Packet from ' + str(packet.header.src) + ', ' + str(packet))

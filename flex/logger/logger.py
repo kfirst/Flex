@@ -17,7 +17,7 @@ _path = os.path.dirname(_path) + os.sep
 _ext_path = os.path.dirname(_ext_path) + os.sep
 
 
-class LoggerGenerator(Module):
+class Logger(Module):
 
     def __init__(self, level, handlers):
         self._level = level

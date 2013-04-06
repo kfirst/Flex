@@ -20,7 +20,7 @@ class ConnectionGenerator(object):
             client.setblocking(False)
             return Connection(client, address, connection_handler)
         except Exception, e:
-            raise ConnectFailException('Can not get connection of ' + address.__str__() + ', because of ' + e.__str__())
+            raise ConnectFailException('Can not connect to ' + str(address) + ', because of ' + str(e))
 
     def get_server(self, address, backlog, connection_handler):
         try:
@@ -32,7 +32,7 @@ class ConnectionGenerator(object):
             server.setblocking(False)
             return Connection(server, address, connection_handler)
         except Exception, e:
-            raise ConnectFailException('Can not get server of ' + address.__str__() + ', because of ' + e.__str__())
+            raise ConnectFailException('Can not start server at ' + str(address) + ', because of ' + str(e))
 
     def accept(self, connection, connection_handler):
         sock, address = connection.get_sock().accept()

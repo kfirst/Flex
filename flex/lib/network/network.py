@@ -30,7 +30,7 @@ class Network(object):
             self._monitor.add(connection)
         connection.get_handler().send(data)
 
-    def schedule(self, timeout=0):
+    def schedule(self, timeout = 0):
         self._monitor.schedule(timeout)
 
     def _accept_connection(self, connection, event):
@@ -58,9 +58,9 @@ class ClientHandler(ConnectionHandler):
     EOL = '\n'
     EOL_LENGTH = len(EOL)
 
-    def __init__(self, network, data_listener):
+    def __init__(self, network, data_handler):
         self._network = network
-        self._handler = data_listener
+        self._handler = data_handler
         self._request = ''
         self._response = []
 
@@ -72,7 +72,7 @@ class ClientHandler(ConnectionHandler):
                 while(True):
                     index = self._request.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
                     data = self._decode_data(self._request[0:index])
-                    self._handler.handle(self._connection.get_address(), data)
+                    self._handler.handle(data)
                     self._request = self._request[index + ClientHandler.EOL_LENGTH:]
             except ValueError:
                 pass
