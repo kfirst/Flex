@@ -51,6 +51,14 @@ core.network.send(topology._controllers[topology._my_id], topo_packet)
 
 time.sleep(1)
 
+sw = set([sw07, sw06])
+sw1 = set([sw01])
+topo_packet_content = TopologyPacketContent(topology._controllers['c_02_pox'], sw, sw1)
+topo_packet = Packet(PacketHeader.TOPO, topo_packet_content)
+core.network.send(topology._controllers[topology._my_id], topo_packet)
+
+time.sleep(1)
+
 ###################################################
 hello_packet_content = HelloPacketContent(topology._controllers['c_02_pox'])
 hello_packet = Packet(PacketHeader.HELLO, hello_packet_content)

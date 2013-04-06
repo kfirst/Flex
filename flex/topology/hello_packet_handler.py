@@ -38,4 +38,4 @@ class HelloPacketHandler(PacketHandler):
         topo_packet = Packet(PacketHeader.TOPO, topo_packet_content)
         core.network.send(packet.content.controller, topo_packet)
 
-        core.event.happen(NeighborControllerUpEvent(self._controllers[self._my_id]))
+        core.event.happen(NeighborControllerUpEvent(packet.content.controller))
