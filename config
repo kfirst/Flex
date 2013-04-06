@@ -5,7 +5,8 @@
 			#core模块启动后需要载入的模块列表
 			"module": [
 				"flex.network",
-				"flex.topology"
+				"flex.topology",
+				"flex.pox"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
@@ -22,6 +23,9 @@
 		#network模块的配置，包括地址和连接数等
 		"network": {
 			"backlog": 50
+		},
+		"pox": {
+			"pox_command_line": ""
 		}
 	},
 	"topology": {

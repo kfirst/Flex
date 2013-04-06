@@ -10,18 +10,19 @@ import logging
 import os
 from flex.base.module import Module
 
-_path = inspect.stack()[0][1]
-_path = _path[0:_path.rindex(os.sep)]
-_ext_path = _path[0:_path.rindex(os.sep)]
-_path = os.path.dirname(_path) + os.sep
-_ext_path = os.path.dirname(_ext_path) + os.sep
+_flexpath = inspect.stack()[0][1]
+_flexpath = _flexpath[0:_flexpath.rindex(os.sep)]
+_ext_flexpath = _flexpath[0:_flexpath.rindex(os.sep)]
+_ext_flexpath = os.path.dirname(_ext_flexpath) + os.sep
 
 
 class Logger(Module):
 
     def __init__(self, level, handlers):
-        self._level = level
-        self._handlers = handlers
+        logger = logging.getLogger()
+        logger.setLevel(level)
+        for handler in handlers:
+            logger.addHandler(handler)
 
     def get_logger (self, name = None, moreFrames = 0):
         if name is None:
@@ -32,15 +33,10 @@ class Logger(Module):
                 name = name[0:-4]
             if name.endswith(".__init__"):
                 name = name[0:-9]
-            if name.startswith(_path):
-                name = name[len(_path):]
-            elif name.startswith(_ext_path):
-                name = name[len(_ext_path):]
+            if name.startswith(_ext_flexpath):
+                name = name[len(_ext_flexpath):]
             name = name.replace(os.sep, '.')
         logger = logging.getLogger(name)
-        logger.setLevel(self._level)
-        for handler in self._handlers:
-            logger.addHandler(handler)
         return logger
 
     def get_level(self):

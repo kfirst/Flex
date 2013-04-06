@@ -4,8 +4,8 @@ Created on 2013-3-27
 @author: kfirst
 '''
 
-import pox.core.core as pox_core
-import flex.core.core as flex_core
+from pox.core import core as pox_core
+from flex.core import core as flex_core
 from flex.model.packet import Packet, PacketHeader, TopologyPacketContent
 
 class TopologyHandler():

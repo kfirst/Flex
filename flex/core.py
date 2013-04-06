@@ -7,11 +7,21 @@ Created on 2013-3-19
 
 from flex.base.module import Module
 
+# import inspect, os, sys
+# _path = inspect.stack()[0][1]
+# _path = _path[0:_path.rindex(os.sep)]
+# sys.path.append(os.path.abspath(_path))
+
 class Core(Module):
 
     def __init__(self):
+        self.version()
         self._components = {}
+        self._component_names = []
         self._config_path = '../config'
+
+    def version(self):
+        print 'Flex 0.0.1'
 
     def set_config_path(self, config_path):
         self._config_path = config_path
@@ -32,9 +42,9 @@ class Core(Module):
             self._logger.debug('Lanch ' + component)
             component_class = __import__(component, fromlist = [''])
             component_class.launch()
-        for component in self._components:
-            self._logger.debug('Start ' + component)
-            self._components[component].start()
+        for name in self._component_names:
+            self._logger.debug('Start ' + name)
+            self._components[name].start()
 
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()
@@ -42,12 +52,14 @@ class Core(Module):
             raise AttributeError('Attribute [' + name + '] already exists in Core!')
         obj = component_class(*args, **kw)
         self._components[name] = obj
+        self._component_names.append(name)
 
     def register_object(self, name, obj):
         name = name.lower()
         if name in self._components:
             raise AttributeError('Attribute [' + name + '] already exists in Core!')
         self._components[name] = obj
+        self._component_names.append(name)
 
     def get_logger(self, name = None):
         return self.logger.get_logger(name, 1)
@@ -61,11 +73,3 @@ class Core(Module):
 
 
 core = Core()
-
-
-if __name__ == '__main__':
-    from flex.core import core
-    core.start()
-    logger = core.get_logger()
-    logger.warning('test')
-    print core.network._myself
