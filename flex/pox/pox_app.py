@@ -50,4 +50,4 @@ def launch_pox(config, app):
 def launch():
     from pox.core import core as pox_core
     pox_core.register('pox_app', pox_app)
-    logger.debug('Pox app registered')
+    logger.debug('POX app registered')

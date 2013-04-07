@@ -7,11 +7,6 @@ Created on 2013-3-19
 
 from flex.base.module import Module
 
-# import inspect, os, sys
-# _path = inspect.stack()[0][1]
-# _path = _path[0:_path.rindex(os.sep)]
-# sys.path.append(os.path.abspath(_path))
-
 class Core(Module):
 
     def __init__(self):

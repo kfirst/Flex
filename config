@@ -25,7 +25,8 @@
 			"backlog": 50
 		},
 		"pox": {
-			"pox_command_line": ""
+			"pox_command_line": "",
+			"pox_path": "../../POX"
 		}
 	},
 	"topology": {
