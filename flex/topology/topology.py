@@ -4,12 +4,12 @@ Created on 2013-3-19
 @author: fzm
 '''
 
-from flex.model.packet import PacketHeader
 from flex.core import core
 from flex.base.module import Module
 from flex.base.exception import ControllerNotFoundException, SwitchNotFoundException
 from flex.topology.topo_packet_handler import TopoPacketHandler
 from flex.topology.hello_packet_handler import HelloPacketHandler
+from flex.model.packet import Packet
 
 logger = core.get_logger()
 
@@ -26,8 +26,8 @@ class Topology(Module):
 
     def start(self):
         network = core.network
-        network.register_handler(PacketHeader.TOPO, TopoPacketHandler(self))
-        network.register_handler(PacketHeader.HELLO, HelloPacketHandler(self))
+        network.register_handler(Packet.TOPO, TopoPacketHandler(self))
+        network.register_handler(Packet.HELLO, HelloPacketHandler(self))
 
     def next_hop_of_controller(self, controller):
         try:

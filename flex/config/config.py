@@ -29,8 +29,9 @@ class Config(Module):
                 if not line.startswith('#'):
                     content.append(line)
         except IOError:
-            self._err('The config file \'' + path + '\' is not found!')
-        finally:
+            self._err('The config file \'' + path + '\' is not found!', 'ERROR')
+            sys.exit(-1)
+        else:
             fd.close()
         return ''.join(content)
 
@@ -41,9 +42,9 @@ class Config(Module):
             self._err('The format of the config file is not correct! Json format is accepted.')
             return {}
 
-    def _err(self, info):
+    def _err(self, info, level = 'WARNING'):
         sys.stderr.write(('%(levelname)-10s[%(name)-s]: %(message)s' + os.linesep) % {
-                          'levelname': 'WARNING',
+                          'levelname': level,
                           'name': 'Config',
                           'message': info})
 

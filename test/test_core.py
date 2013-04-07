@@ -5,6 +5,7 @@ Created on 2013-4-6
 '''
 
 from flex.core import core
+core.set_config_path('config')
 core.start()
 logger = core.get_logger()
 logger.warning('test')

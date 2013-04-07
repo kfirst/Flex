@@ -5,7 +5,6 @@ Created on 2013-3-30
 '''
 
 from flex.core import core
-from flex.model.device import Switch
 from flex.base.handler import PacketHandler
 
 logger = core.get_logger()

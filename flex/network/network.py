@@ -54,9 +54,9 @@ class Network(Module):
         self._dispatcher._handle(packet)
 
     def _check_header(self, controller, packet):
-        packet.header.src = self._myself
-        packet.header.dst = controller
-        path = packet.header.path
+        packet.tracker.src = self._myself
+        packet.tracker.dst = controller
+        path = packet.tracker.path
         if not path or path[-1] != self._myself:
             path.append(self._myself)
 

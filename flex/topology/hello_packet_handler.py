@@ -7,7 +7,7 @@ Created on 2013-3-30
 from flex.core import core
 from flex.base.handler import PacketHandler
 from flex.base.event import NeighborControllerUpEvent
-from flex.model.packet import Packet, PacketHeader, HelloPacketContent, TopologyPacketContent
+from flex.model.packet import Packet, HelloPacketContent, TopologyPacketContent
 
 logger = core.get_logger()
 
@@ -18,7 +18,7 @@ class HelloPacketHandler(PacketHandler):
 
         # send hello packet
         hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
-        hello_packet = Packet(PacketHeader.HELLO, hello_packet_content)
+        hello_packet = Packet(Packet.HELLO, hello_packet_content)
         for cid in self._relation_of_neighbor:
             core.network.send(self._controllers[cid], hello_packet)
 
@@ -31,11 +31,11 @@ class HelloPacketHandler(PacketHandler):
         if not packet.content.response:
             hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
             hello_packet_content.response = True
-            hello_packet = Packet(PacketHeader.HELLO, hello_packet_content)
+            hello_packet = Packet(Packet.HELLO, hello_packet_content)
             core.network.send(packet.content.controller, hello_packet)
 
         topo_packet_content = TopologyPacketContent(self._controllers[self._my_id], self._switches.keys(), set())
-        topo_packet = Packet(PacketHeader.TOPO, topo_packet_content)
+        topo_packet = Packet(Packet.TOPO, topo_packet_content)
         core.network.send(packet.content.controller, topo_packet)
 
         core.event.happen(NeighborControllerUpEvent(packet.content.controller))

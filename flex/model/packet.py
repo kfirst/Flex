@@ -7,20 +7,16 @@
 
 from flex.lib.util import object_to_string
 
-class PacketHeader(object):
+class PacketTracker(object):
+    '''
+    报文追踪器，记录报文经过的路径，主要用于Debug
+    '''
 
-    TOPO = 'topo'
-    HELLO = 'hello'
-
-    def __init__(self, src, dst, packet_type):
-        self.src = src
-        self.dst = dst
-        self.type = packet_type
+    def __init__(self):
         self.path = []
 
     def __str__(self):
         return object_to_string(self,
-                    type = self.type,
                     src = self.src,
                     dst = self.dst,
                     path = self.path)
@@ -30,15 +26,24 @@ class PacketHeader(object):
 
 
 class Packet(object):
+    '''
+    报文，该类中的常量表示报文的类型
+    '''
+
+    TOPO = 'topo'
+    HELLO = 'hello'
+    CONTROL_FROM_SWITCH = 'control_s'
 
     def __init__(self, packet_type, content):
-        self.header = PacketHeader(None, None, packet_type)
+        self.tracker = PacketTracker()
+        self.type = packet_type
         self.content = content
 
     def __str__(self):
         return object_to_string(self,
-                    header = self.header,
-                    content = self.content)
+                    type = self.type,
+                    content = self.content,
+                    tracker = self.tracker)
 
     def __repr__(self):
         return self.__str__()
@@ -76,8 +81,24 @@ class HelloPacketContent(object):
         return self.__str__()
 
 
-if __name__ == '__main__':
-    from flex.model.device import Controller
-    controller = Controller('cid', ('ip', 'port'))
-    packet = Packet('packet_header', 'content')
-    print packet
+class ControlPacketContent():
+
+    CONNECTION_UP = 'ConnectionUp'
+    CONNECTION_DOWN = 'ConnectionDown'
+
+    def __init__(self, content_type):
+        self.type = content_type
+
+
+class ConnectionUpContent(ControlPacketContent):
+
+    def __init__(self, switch):
+        super(ConnectionUpContent, self).__init__(ControlPacketContent.CONNECTION_UP)
+        self.switch = switch
+
+
+class ConnectionDownContent(ControlPacketContent):
+
+    def __init__(self, switch):
+        super(ConnectionDownContent, self).__init__(ControlPacketContent.CONNECTION_DOWN)
+        self.switch = switch
