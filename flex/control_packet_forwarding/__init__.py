@@ -4,4 +4,4 @@ from flex.control_packet_forwarding.control_packet_forwarding import ControlPack
 def launch():
     cpf = ControlPacketForwarding()
 
-    core.register_object('control_packet_forwarding', cpf)
+    core.register_object('controlPacketForwarding', cpf)

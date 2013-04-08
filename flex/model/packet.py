@@ -17,9 +17,9 @@ class PacketTracker(object):
 
     def __str__(self):
         return object_to_string(self,
-                    src = self.src,
-                    dst = self.dst,
-                    path = self.path)
+                    src=self.src,
+                    dst=self.dst,
+                    path=self.path)
 
     def __repr__(self):
         return self.__str__()
@@ -33,6 +33,7 @@ class Packet(object):
     TOPO = 'topo'
     HELLO = 'hello'
     CONTROL_FROM_SWITCH = 'control_s'
+    REGISTEER_CONCERS = 'register_concern'
 
     def __init__(self, packet_type, content):
         self.tracker = PacketTracker()
@@ -41,9 +42,9 @@ class Packet(object):
 
     def __str__(self):
         return object_to_string(self,
-                    type = self.type,
-                    content = self.content,
-                    tracker = self.tracker)
+                    type=self.type,
+                    content=self.content,
+                    tracker=self.tracker)
 
     def __repr__(self):
         return self.__str__()
@@ -58,9 +59,9 @@ class TopologyPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                    controller = self.controller,
-                    switches_added = self.switches_added,
-                    switches_removed = self.switches_removed)
+                    controller=self.controller,
+                    switches_added=self.switches_added,
+                    switches_removed=self.switches_removed)
 
     def __repr__(self):
         return self.__str__()
@@ -68,14 +69,14 @@ class TopologyPacketContent(object):
 
 class HelloPacketContent(object):
 
-    def __init__(self, controller, response = False):
+    def __init__(self, controller, response=False):
         self.response = response
         self.controller = controller
 
     def __str__(self):
         return object_to_string(self,
-                    if_response = self.response,
-                    controller = self.controller)
+                    if_response=self.response,
+                    controller=self.controller)
 
     def __repr__(self):
         return self.__str__()
@@ -102,3 +103,8 @@ class ConnectionDownContent(ControlPacketContent):
     def __init__(self, switch):
         super(ConnectionDownContent, self).__init__(ControlPacketContent.CONNECTION_DOWN)
         self.switch = switch
+
+class RegisterConcersContent(object):
+    def __init__(self, controller, ttype):
+        self.controller = controller
+        self.type = ttype
