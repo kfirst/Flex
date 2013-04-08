@@ -36,7 +36,7 @@ class PoxApp(Module):
             except KeyError:
                 logger.error('No handler for type [' + type + ']')
                 return
-            self._handlers[control_type] = handler_class()
+            self._handlers[control_type] = handler_class(self._myself)
 
 
 pox_app = None

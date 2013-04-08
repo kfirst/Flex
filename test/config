@@ -30,8 +30,8 @@
 			"pox_path": "../POX"
 		},
 		"selector": {
-			"controller": ["sample", 2],
-			"module": ["all"]
+			"algorithm": "sample",
+			"parameter": [2]
 		}
 	},
 	"topology": {

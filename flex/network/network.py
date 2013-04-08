@@ -36,17 +36,20 @@ class Network(Module):
         '''
         向指定的Controller发送Packet
         '''
-        self._check_header(controller, packet)
-        logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
-        data = self._transformer.packet_to_data(packet)
-        try:
-            self._network.send(controller.get_address(), data)
-        except ConnectFailException, e:
-            logger.warning(e)
-            return False
+        if controller.get_address() == self._myself.get_address():
+            self._dispatch(packet)
+        else:
+            self._check_header(controller, packet)
+            logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
+            data = self._transformer.packet_to_data(packet)
+            try:
+                self._network.send(controller.get_address(), data)
+            except ConnectFailException, e:
+                logger.warning(e)
+                return False
         return True
 
-    def dispatch(self, packet):
+    def _dispatch(self, packet):
         '''
         向自己发送报文，为了简化模块的设计，模块与模块之间的通信可以只用该方法，
         该方法会直接调用关心该类型报文的Handler，而无需经过内核转发

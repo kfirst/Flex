@@ -9,4 +9,4 @@ core.set_config_path('config')
 core.start()
 logger = core.get_logger()
 logger.warning('test')
-print core.network._myself
+print core.myself.get_self_type()

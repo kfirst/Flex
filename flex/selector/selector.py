@@ -11,29 +11,20 @@ logger = core.get_logger()
 
 class Selector(Module):
 
-    CONTROLLER = 'controller'
-    MODULE = 'module'
-
-    def __init__(self):
-        self._algorithms = {}
-        self._parameters = {}
-
-    def register_algorithm(self, value_type, algorithm, argv):
+    def __init__(self, algorithm, argv):
         try:
-            self._algorithms[value_type] = getattr(self, algorithm)
-            self._parameters[value_type] = argv
+            self._algorithm = getattr(self, algorithm)
+            self._parameter = argv
         except AttributeError:
             logger.error('Algorithm [' + algorithm + '] does not defined')
+            self._algorithm = self.sample
 
-    def select(self, value_type, values):
-        try:
-            parameter = self._parameters[value_type]
-            return self._algorithms[value_type](values, *parameter)
-        except KeyError:
-            return self.sample(values)
+    def select(self, values):
+        parameter = self._parameter
+        return self._algorithm(values, *parameter)
 
     def sample(self, values, size = 1):
-        return random.sample(values, size)
+        return random.sample(values, min(len(values), size))
 
     def all(self, values):
         return values

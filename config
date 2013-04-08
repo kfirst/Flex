@@ -29,9 +29,11 @@
 			"pox_command_line": "",
 			"pox_path": "../POX"
 		},
+		#selector模块的配置，主要功能是：
+		#在转发控制报文时，从关心该类型报文的controlller中选出若干个，将报文转发给这些controller
 		"selector": {
-			"controller": ["sample", 2],
-			"module": ["all"]
+			"algorithm": "sample",
+			"parameter": []
 		}
 	},
 	"topology": {

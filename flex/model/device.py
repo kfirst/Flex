@@ -26,7 +26,7 @@ class Controller(Device):
 
     def __init__(self, cid, address):
         super(Controller, self).__init__(cid)
-        self.__address = address
+        self.__address = tuple(address)
         self.__status = False
 
     def get_address(self):
