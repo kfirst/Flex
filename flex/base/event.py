@@ -17,8 +17,9 @@ class NeighborControllerUpEvent(BaseEvent):
     '''
     邻居Controller启动事件，在和邻居Controller建立连接并握手后发生
     '''
-    def __init__(self, controller):
+    def __init__(self, controller, relation):
         self.controller = controller
+        self.relation = relation
 
     def __str__(self):
-        return object_to_string(self, controller = self.controller)
+        return object_to_string(self, controller=self.controller)

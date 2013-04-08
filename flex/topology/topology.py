@@ -45,3 +45,27 @@ class Topology(Module):
             raise SwitchNotFoundException('The nexthop of ' + str(switch) + ' is not found!')
         else:
             raise SwitchNotFoundException('The nexthop of ' + str(switch) + ' is not found!')
+
+    def get_neighbor_relation(self, controller):
+        return self._relation_of_neighbor[controller.get_id()]
+
+    def get_peer_controller(self):
+        controller_set = set()
+        for cid in self._neighbors_with_relation['peer']:
+            if self._controllers[cid].is_up():
+                controller_set.add(self._controllers[cid])
+        return controller_set
+
+    def get_provider_controller(self):
+        controller_set = set()
+        for cid in self._neighbors_with_relation['provider']:
+            if self._controllers[cid].is_up():
+                controller_set.add(self._controllers[cid])
+        return controller_set
+
+    def get_customer_controller(self):
+        controller_set = set()
+        for cid in self._neighbors_with_relation['customer']:
+            if self._controllers[cid].is_up():
+                controller_set.add(self._controllers[cid])
+        return controller_set
