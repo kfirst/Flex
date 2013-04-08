@@ -6,9 +6,10 @@ Created on 2013-3-27
 
 from pox.core import core as pox_core
 from flex.core import core as flex_core
-from flex.model.packet import Packet, PacketHeader, TopologyPacketContent
+from flex.model.packet import *
+from flex.model.device import Switch
 
-class TopologyHandler():
+class TopologyHandler(object):
 
     def __init__(self, switch_pool, self_controller):
         self._pool = switch_pool
@@ -16,9 +17,9 @@ class TopologyHandler():
         pox_core.openflow.addListeners(self)
 
     def _handle_ConnectionUp(self, event):
-        switch = event.connection
-        self._pool.set(event.dpid, switch)
-        packet = self._create_topo_packet(switch, True)
+        connection = event.connection
+        self._pool.set(event.dpid, connection)
+        packet = self._create_topo_packet(Switch(event.dpid), True)
         flex_core.network.dispatch(packet)
 
     def _handle_ConnectionDown(self, event):
@@ -36,3 +37,32 @@ class TopologyHandler():
             removed.add(switch)
         content = TopologyPacketContent(self._myself, added, removed)
         return Packet(PacketHeader.TOPO, content)
+
+
+class ControlHandler(object):
+
+    def _create_and_send_packet(self, content):
+        packet = Packet(PacketHeader.CONTROL_FROM_SWITCH, content)
+        flex_core.network.dispatch(packet)
+
+
+class ConnectionUpHandler(ControlHandler):
+
+    def __init__(self):
+        pox_core.openflow.addListeners(self)
+
+    def _handle_ConnectionUp(self, event):
+        switch = Switch(event.dpid)
+        content = ConnectionUpContent(switch)
+        self._create_and_send_packet(content)
+
+
+class ConnectionDownHandler(ControlHandler):
+
+    def __init__(self):
+        pox_core.openflow.addListeners(self)
+
+    def _handle_ConnectionDown(self, event):
+        switch = Switch(event.dpid)
+        content = ConnectionDownContent(switch)
+        self._create_and_send_packet(content)
