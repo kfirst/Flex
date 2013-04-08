@@ -8,7 +8,7 @@ from flex.model.device import Device, Controller, Switch
 from flex.model.packet import Packet, PacketHeader, HelloPacketContent, TopologyPacketContent
 import time
 
-core.set_config_path('../../config')
+core.set_config_path('../config')
 core.start()
 topology = core.topology
 

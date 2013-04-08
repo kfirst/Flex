@@ -6,6 +6,7 @@
 			"module": [
 				"flex.network",
 				"flex.topology",
+				"flex.selector",
 				"flex.pox"
 			]
 		},
@@ -26,7 +27,11 @@
 		},
 		"pox": {
 			"pox_command_line": "",
-			"pox_path": "../../POX"
+			"pox_path": "../POX"
+		},
+		"selector": {
+			"controller": ["sample", 2],
+			"module": ["all"]
 		}
 	},
 	"topology": {
