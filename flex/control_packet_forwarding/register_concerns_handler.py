@@ -16,8 +16,9 @@ class Register_Concerns_Handler(PacketHandler):
         return getattr(self._control, name)
 
     def handle(self, packet):
-        controller = packet.header.controller
-        types = packet.header.type
+        logger.debug('Receive an Register Concerns Packet:' + str(packet))
+        controller = packet.content.controller
+        types = packet.content.type
         for ttype in types:
             try:
                 self.type_controller[ttype].add(controller)
@@ -27,8 +28,11 @@ class Register_Concerns_Handler(PacketHandler):
         self.send_packet_to_neighbors(packet)
 
     def send_packet_to_neighbors(self, packet):
+        print 'XXXXDXXXXXX'
         peer_controllers = core.topology.get_peer_controller()
+        print peer_controllers
         customer_controllers = core.topology.get_customer_controller()
+        print customer_controllers
 
         packet.content.controller = self.self_controller
         # packet.content.type = self.type_controller.keys()
@@ -38,3 +42,5 @@ class Register_Concerns_Handler(PacketHandler):
 
         for controller in customer_controllers:
             core.network.send(controller, packet)
+
+        print 'AAAAAAAAAAA'

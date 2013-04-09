@@ -17,7 +17,6 @@ class ControlPacketForwarding(Module):
     def __init__(self):
         self.self_controller = core.myself.get_self_controller()
         self.self_id = self.self_controller.get_id()
-        self.type_module = {}
         self.type_controller = {}
 
     def start(self):
@@ -27,17 +26,6 @@ class ControlPacketForwarding(Module):
 
         control_up_handler = ControlUpRegisterConcernHandler(self)
         core.event.register_handler(NeighborControllerUpEvent, control_up_handler)
-
-    def register(self, ttype, modules):
-        try:
-            self.type_controller[ttype].add(self.self_controller)
-        except KeyError:
-            self.type_controller[ttype] = set([self.self_controller])
-
-        if ttype in self.type_module:
-            self.type_module[ttype] &= modules
-        else:
-            self.type_module[ttype] = modules
 
 class ControlUpRegisterConcernHandler(object):
     def __init__(self, control_packet_forwarding):
