@@ -42,5 +42,5 @@ class LocalHandler(PacketHandler):
         try:
             func = getattr(self, control_type)
         except AttributeError:
-            logger.error('No handler for type [' + control_type + '] in ' + packet)
+            logger.error('No handler for type [' + control_type + '] in ' + str(packet))
         func(packet.content)
