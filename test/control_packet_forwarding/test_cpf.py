@@ -5,7 +5,7 @@ Created on 2013-4-8
 '''
 from flex.core import core
 import time
-from flex.model.packet import Packet, RegisterConcersContent, HelloPacketContent, TopologyPacketContent, ControlPacketContent
+from flex.model.packet import Packet, RegisterConcersContent, HelloPacketContent, TopologyPacketContent, ControlPacketContent, ApiPacketContent
 from flex.model.device import Device, Controller, Switch
 
 core.set_config_path('../config')
@@ -46,41 +46,36 @@ controller = core.topology._controllers[self_id]
 
 print 'I am ' + self_id
 
-controller1 = core.topology._controllers['c01']
-controller2 = core.topology._controllers['c02']
-controller3 = core.topology._controllers['c_02_pox']
-controller4 = core.topology._controllers['c_01']
+sw01 = Switch('sw01')
+sw02 = Switch('sw02')
+sw03 = Switch('sw03')
+sw04 = Switch('sw04')
+sw05 = Switch('sw05')
+sw06 = Switch('sw06')
+sw07 = Switch('sw07')
 
-content = RegisterConcersContent(controller1, set([1, 4, 6, 88]))
-packet = Packet(Packet.REGISTEER_CONCERS, content)
+
+###############################################################
+sw = set([sw01, sw02, sw03])
+topo_packet_content = TopologyPacketContent(core.topology._controllers['c_02_pox'], sw, set())
+topo_packet = Packet(Packet.TOPO, topo_packet_content)
+core.network.send(core.topology._controllers[core.topology._my_id], topo_packet)
+
+time.sleep(1)
+
+sw = set([sw06, sw05, sw04])
+topo_packet_content = TopologyPacketContent(core.topology._controllers['c_01_pox'], sw, set())
+topo_packet = Packet(Packet.TOPO, topo_packet_content)
+core.network.send(core.topology._controllers[core.topology._my_id], topo_packet)
+
+time.sleep(1)
+
+content = ApiPacketContent(111, sw01)
+packet = Packet(Packet.CONTROL_FROM_API, content)
 core.network.send(controller, packet)
 
 time.sleep(1)
 
-content = RegisterConcersContent(controller2, set([1, 4, 7, 99]))
-packet = Packet(Packet.REGISTEER_CONCERS, content)
-core.network.send(controller, packet)
-
-time.sleep(1)
-
-content = RegisterConcersContent(controller2, set([11, 4, 47, 499]))
-packet = Packet(Packet.REGISTEER_CONCERS, content)
-core.network.send(controller, packet)
-
-time.sleep(1)
-
-content = RegisterConcersContent(controller4, set([1, 44, 47, 499]))
-packet = Packet(Packet.REGISTEER_CONCERS, content)
-core.network.send(controller, packet)
-
-time.sleep(1)
-###############################################
-content = ControlPacketContent(11)
-packet = Packet(Packet.CONTROL_FROM_SWITCH, content)
-core.network.send(controller, packet)
-
-time.sleep(1)
-
-
-print cpf.type_controller
+print cpf.type
+print core.topology._controllers_of_switch
 

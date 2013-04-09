@@ -5,6 +5,7 @@ Created on 2013-4-6
 '''
 from flex.core import core
 from flex.base.handler import PacketHandler
+from flex.model.packet import Packet
 
 logger = core.get_logger()
 
@@ -28,14 +29,13 @@ class Register_Concerns_Handler(PacketHandler):
         self.send_packet_to_neighbors(packet)
 
     def send_packet_to_neighbors(self, packet):
-        print 'XXXXDXXXXXX'
+
         peer_controllers = core.topology.get_peer_controller()
         print peer_controllers
         customer_controllers = core.topology.get_customer_controller()
         print customer_controllers
 
         packet.content.controller = self.self_controller
-        # packet.content.type = self.type_controller.keys()
 
         for controller in peer_controllers:
             core.network.send(controller, packet)
@@ -43,4 +43,7 @@ class Register_Concerns_Handler(PacketHandler):
         for controller in customer_controllers:
             core.network.send(controller, packet)
 
-        print 'AAAAAAAAAAA'
+        if self.type == 'pox':
+            packet.type = Packet.LOCAL_CONCERN
+            core.network.send(self.self_controller, packet)
+

@@ -5,7 +5,6 @@ Created on 2013-4-6
 '''
 from flex.core import core
 from flex.base.handler import PacketHandler
-from flex.selector.selector import Selector
 from flex.model.packet import  Packet
 
 logger = core.get_logger()
@@ -19,7 +18,6 @@ class Control_From_Switch_Handler(PacketHandler):
 
     def handle(self, packet):
         packet_type = packet.content.type
-        print 'ssss'
         try:
             target_controllers = core.selector.select(self.type_controller[packet_type])
             print target_controllers
@@ -32,7 +30,7 @@ class Control_From_Switch_Handler(PacketHandler):
                 self.target_is_others(packet, controller)
 
     def target_is_self(self, packet):
-        packet.type = Packet.API
+        packet.type = Packet.LOCAL_TO_API
         core.network.send(self.self_controller, packet)
 
     def target_is_others(self, packet, controller):
