@@ -17,7 +17,7 @@ class Control_From_Switch_Handler(PacketHandler):
         return getattr(self._control, name)
 
     def handle(self, packet):
-        packet_type = packet.content.type
+        packet_type = packet.content.types
         try:
             target_controllers = core.selector.select(self.type_controller[packet_type])
             print target_controllers
