@@ -6,7 +6,8 @@ Created on 2013-4-6
 
 from flex.base.module import Module
 from flex.core import core as flex_core
-from flex.model.packet import ControlPacketContent as control
+from flex.model.packet import Packet
+from flex.pox.flex_handlers import LocalHandler
 
 logger = flex_core.get_logger()
 
@@ -20,23 +21,13 @@ class PoxApp(Module):
         launch_pox(self._config, self)
 
         from flex.pox.switch_pool import SwitchPool
-        from flex.pox.pox_handlers import *
+        from flex.pox.pox_handlers import TopologyHandler
         self._pool = SwitchPool()
         self._topo_handler = TopologyHandler(self._pool, self._myself)
-        self._handlers = {}
-        self._handlers_name = {
-            control.CONNECTION_UP: ConnectionUpHandler,
-            control.CONNECTION_DOWN: ConnectionDownHandler
-        }
 
-    def handle_packet(self, control_type):
-        if control_type not in self._handlers:
-            try:
-                handler_class = self._handlers_name[control_type]
-            except KeyError:
-                logger.error('No handler for type [' + type + ']')
-                return
-            self._handlers[control_type] = handler_class(self._myself)
+        from flex.pox.flex_handlers import ConcernHandler
+        flex_core.network.register_handler(Packet.LOCAL_CONCERN, ConcernHandler(self._myself))
+        flex_core.network.register_handler(Packet.LOCAL_TO_POX, LocalHandler(self._pool))
 
 
 pox_app = None

@@ -7,6 +7,9 @@ from flex.base.module import Module
 
 class Myself(Module):
 
+    POX = 'pox'
+    FLEX = 'flex'
+
     def __init__(self, controller, controller_type):
         self._myself = controller
         self._type = controller_type

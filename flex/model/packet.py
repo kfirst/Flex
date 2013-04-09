@@ -19,9 +19,9 @@ class PacketTracker(object):
 
     def __str__(self):
         return object_to_string(self,
-                    src=self.src,
-                    dst=self.dst,
-                    path=self.path)
+                    src = self.src,
+                    dst = self.dst,
+                    path = self.path)
 
     def __repr__(self):
         return self.__str__()
@@ -48,9 +48,9 @@ class Packet(object):
 
     def __str__(self):
         return object_to_string(self,
-                    type=self.type,
-                    content=self.content,
-                    tracker=self.tracker)
+                    type = self.type,
+                    content = self.content,
+                    tracker = self.tracker)
 
     def __repr__(self):
         return self.__str__()
@@ -65,9 +65,9 @@ class TopologyPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                    controller=self.controller,
-                    switches_added=self.switches_added,
-                    switches_removed=self.switches_removed)
+                    controller = self.controller,
+                    switches_added = self.switches_added,
+                    switches_removed = self.switches_removed)
 
     def __repr__(self):
         return self.__str__()
@@ -75,27 +75,29 @@ class TopologyPacketContent(object):
 
 class HelloPacketContent(object):
 
-    def __init__(self, controller, response=False):
+    def __init__(self, controller, response = False):
         self.response = response
         self.controller = controller
 
     def __str__(self):
         return object_to_string(self,
-                    if_response=self.response,
-                    controller=self.controller)
+                    if_response = self.response,
+                    controller = self.controller)
 
     def __repr__(self):
         return self.__str__()
 
+
 class RegisterConcersContent(object):
-    def __init__(self, controller, concern_type):
+    def __init__(self, controller, concern_types):
         self.controller = controller
-        self.type = concern_type
+        self.types = concern_types
 
     def __str__(self):
         return object_to_string(self,
-                    controller=self.controller,
-                    type=self.type)
+                    controller = self.controller,
+                    types = self.types)
+
 
 class ControlPacketContent(object):
 
@@ -107,7 +109,7 @@ class ControlPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                    type=self.type)
+                    type = self.type)
 
     def __repr__(self):
         return self.__str__()
@@ -121,8 +123,8 @@ class ApiPacketContent(ControlPacketContent):
 
     def __str__(self):
         return object_to_string(self,
-                    type=self.type,
-                    dst=self.dst)
+                    type = self.type,
+                    dst = self.dst)
 
 
 class ConnectionUpContent(ControlPacketContent):

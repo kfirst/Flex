@@ -32,13 +32,13 @@ class ControlPacketForwarding(Module):
 
 class ControlUpRegisterConcernHandler(object):
     def __init__(self, control_packet_forwarding):
-        self.types = control_packet_forwarding.type_controller.keys()
+        self.type = control_packet_forwarding.type_controller.keys()
 
     def handle(self, event):
         self.controller = event.controller
         self.relation = event.relation
 
-        content = RegisterConcersContent(self.controller, self.types)
+        content = RegisterConcersContent(self.controller, self.type)
         packet = Packet(Packet.REGISTER_CONCERN, content)
         if self.relation != 'provider':
             core.network.send(self.controller, packet)
