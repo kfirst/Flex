@@ -23,7 +23,7 @@ class ControlPacketForwarding(Module):
     def start(self):
         network = core.network
         network.register_handler(Packet.CONTROL_FROM_SWITCH, Control_From_Switch_Handler(self))
-        network.register_handler(Packet.REGISTEER_CONCERS, Register_Concerns_Handler(self))
+        network.register_handler(Packet.REGISTER_CONCERN, Register_Concerns_Handler(self))
 
         control_up_handler = ControlUpRegisterConcernHandler(self)
         core.event.register_handler(NeighborControllerUpEvent, control_up_handler)
@@ -48,7 +48,7 @@ class ControlUpRegisterConcernHandler(object):
         self.relation = event.relation
 
         content = RegisterConcersContent(self.controller, self.types)
-        packet = Packet(Packet.REGISTEER_CONCERS, content)
+        packet = Packet(Packet.REGISTER_CONCERN, content)
         if self.relation != 'provider':
             core.network.send(self.controller, packet)
 
