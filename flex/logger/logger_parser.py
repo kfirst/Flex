@@ -8,6 +8,7 @@ Created on 2013-3-19
 
 import logging
 from flex.logger.logger import Logger
+from flex.logger import logger_handlers
 
 class LoggerParser(object):
 
@@ -34,10 +35,14 @@ class LoggerParser(object):
         return getattr(logging, value)
 
     def _parse_handler(self, value):
-        handler = []
+        handlers = []
         for k in value:
-            handler.append(getattr(logging, k)(*value[k]))
-        return handler
+            try:
+                handler = getattr(logging, k)(*value[k])
+            except AttributeError:
+                handler = getattr(logger_handlers, k)(*value[k])
+            handlers.append(handler)
+        return handlers
 
     def _parse_formater(self, value):
         return logging.Formatter(value)

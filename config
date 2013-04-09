@@ -18,7 +18,7 @@
 			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s](%(funcName)s): %(message)s",
 			#输出方式
 			"handler": {
-				"StreamHandler": []
+				"ColorStreamHandler": []
 			}
 		},
 		#network模块的配置，包括地址和连接数等

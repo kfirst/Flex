@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 Created on 2013-4-7
 
@@ -16,5 +17,12 @@ except IndexError:
 core.set_config_path(config_path)
 core.start()
 
-while True:
-    time.sleep(10)
+logger = core.get_logger()
+
+try:
+    while True:
+        time.sleep(10)
+except:
+    pass
+
+logger.info('Terminate')
