@@ -7,7 +7,6 @@ Created on 2013-4-6
 from flex.base.module import Module
 from flex.core import core as flex_core
 from flex.model.packet import Packet
-from flex.pox.flex_handlers import LocalHandler
 
 logger = flex_core.get_logger()
 
@@ -26,6 +25,7 @@ class PoxApp(Module):
         self._topo_handler = TopologyHandler(self._pool, self._myself)
 
         from flex.pox.flex_handlers import ConcernHandler
+        from flex.pox.flex_handlers import LocalHandler
         flex_core.network.register_handler(Packet.LOCAL_CONCERN, ConcernHandler(self._myself))
         flex_core.network.register_handler(Packet.LOCAL_TO_POX, LocalHandler(self._pool))
 
