@@ -7,7 +7,8 @@
 				"flex.network",
 				"flex.topology",
 				"flex.selector",
-				"flex.pox"
+				"flex.pox",
+				"flex.control_packet_forwarding"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
@@ -27,7 +28,7 @@
 		},
 		"pox": {
 			"pox_command_line": "",
-			"pox_path": "../POX"
+			"pox_path": "../../../POX"
 		},
 		"selector": {
 			"algorithm": "sample",

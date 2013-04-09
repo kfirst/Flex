@@ -96,6 +96,10 @@ class ControlPacketContent():
     def __init__(self, content_type):
         self.type = content_type
 
+    def __str__(self):
+        return object_to_string(self,
+                    type = self.type)
+
 
 class ConnectionUpContent(ControlPacketContent):
 
@@ -111,6 +115,11 @@ class ConnectionDownContent(ControlPacketContent):
         self.switch = switch
 
 class RegisterConcersContent(object):
-    def __init__(self, controller, ttype):
+    def __init__(self, controller, concern_type):
         self.controller = controller
-        self.type = ttype
+        self.type = concern_type
+
+    def __str__(self):
+        return object_to_string(self,
+                    controller = self.controller,
+                    type = self.type)

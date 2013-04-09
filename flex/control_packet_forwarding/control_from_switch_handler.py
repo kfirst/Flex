@@ -5,6 +5,8 @@ Created on 2013-4-6
 '''
 from flex.core import core
 from flex.base.handler import PacketHandler
+from flex.selector.selector import Selector
+from flex.model.packet import  Packet
 
 logger = core.get_logger()
 
@@ -16,7 +18,13 @@ class Control_From_Switch_Handler(PacketHandler):
         return getattr(self._control, name)
 
     def handle(self, packet):
-        target_controllers = core.selector.controller(self.type_controller[type])
+        packet_type = packet.content.type
+        print 'ssss'
+        try:
+            target_controllers = core.selector.select(self.type_controller[packet_type])
+            print target_controllers
+        except KeyError:
+            logger.warning('Control Packet of (' + str(packet_type) + ') type is not found!')
         for controller in target_controllers:
             if controller.get_id == self.self_id:
                 self.target_is_self(packet)
@@ -24,10 +32,8 @@ class Control_From_Switch_Handler(PacketHandler):
                 self.target_is_others(packet, controller)
 
     def target_is_self(self, packet):
-        target_modules = core.selector.module(self.type_module[type])
-        for module in target_modules:
-            # module.handle(packet)
-            pass
+        packet.type = Packet.API
+        core.network.send(self.self_controller, packet)
 
     def target_is_others(self, packet, controller):
         targrt_controller = core.topology.next_hop_of_controller(controller)
