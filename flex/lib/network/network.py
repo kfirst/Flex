@@ -65,7 +65,9 @@ class ClientHandler(ConnectionHandler):
         self._response = []
 
     def handle(self, event):
-        if event & select.EPOLLIN:
+        if event & select.EPOLLHUP:
+            self._network._remove_connection(self._connection)
+        elif event & select.EPOLLIN:
             data = self._connection.recv()
             self._request += data
             try:
@@ -83,8 +85,6 @@ class ClientHandler(ConnectionHandler):
                     del self._response[0]
                 else:
                     self._response[0] = self._response[0][writen:]
-        elif event & select.EPOLLHUP:
-            self._network._remove_connection(self._connection)
 
     def send(self, data):
         self._response.append(self._encode_data(data) + ClientHandler.EOL)

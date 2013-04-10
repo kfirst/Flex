@@ -42,8 +42,7 @@ class Core(Module):
             self._components[name].start()
 
     def terminate(self):
-        for i in range(len(self._component_names) - 1, 0, -1):
-            name = self._component_names[i]
+        for name in self._component_names[::-1]:
             self._logger.debug('Terminate ' + name)
             self._components[name].terminate()
 

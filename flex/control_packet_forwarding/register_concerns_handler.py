@@ -19,7 +19,7 @@ class Register_Concerns_Handler(PacketHandler):
     def handle(self, packet):
         logger.debug('Receive an Register Concerns Packet:' + str(packet))
         controller = packet.content.controller
-        types = packet.content.type
+        types = packet.content.types
         for ttype in types:
             try:
                 self.type_controller[ttype].add(controller)
