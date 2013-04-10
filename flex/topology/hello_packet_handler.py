@@ -34,9 +34,11 @@ class HelloPacketHandler(PacketHandler):
             hello_packet = Packet(Packet.HELLO, hello_packet_content)
             core.network.send(packet.content.controller, hello_packet)
 
-        topo_packet_content = TopologyPacketContent(self._controllers[self._my_id], self._switches.keys(), set())
-        topo_packet = Packet(Packet.TOPO, topo_packet_content)
-        core.network.send(packet.content.controller, topo_packet)
+        switch_added = self._switches.keys()
+        if switch_added:
+            topo_packet_content = TopologyPacketContent(self._controllers[self._my_id], switch_added, set())
+            topo_packet = Packet(Packet.TOPO, topo_packet_content)
+            core.network.send(packet.content.controller, topo_packet)
 
         up_controller = packet.content.controller
         core.event.happen(NeighborControllerUpEvent(up_controller, self._relation_of_neighbor[up_controller.get_id()]))

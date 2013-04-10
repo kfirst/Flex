@@ -11,6 +11,7 @@ from flex.control_packet_forwarding.control_from_switch_handler import Control_F
 from flex.control_packet_forwarding.register_concerns_handler import Register_Concerns_Handler
 from flex.control_packet_forwarding.control_from_api_handler import Control_From_Api_Handler
 from flex.base.event import NeighborControllerUpEvent
+from flex.base.handler import EventHandler
 
 logger = core.get_logger()
 
@@ -30,17 +31,18 @@ class ControlPacketForwarding(Module):
         control_up_handler = ControlUpRegisterConcernHandler(self)
         core.event.register_handler(NeighborControllerUpEvent, control_up_handler)
 
-class ControlUpRegisterConcernHandler(object):
+class ControlUpRegisterConcernHandler(EventHandler):
     def __init__(self, control_packet_forwarding):
-        self.type = control_packet_forwarding.type_controller.keys()
+        self.control_packet_forwarding = control_packet_forwarding
 
     def handle(self, event):
         self.controller = event.controller
         self.relation = event.relation
 
-        content = RegisterConcersContent(self.controller, self.type)
+        concern_types = self.control_packet_forwarding.type_controller.keys()
+        content = RegisterConcersContent(self.controller, concern_types)
         packet = Packet(Packet.REGISTER_CONCERN, content)
-        if self.relation != 'provider':
+        if self.relation != 'provider' and concern_types:
             core.network.send(self.controller, packet)
 
 
