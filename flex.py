@@ -18,6 +18,7 @@ core.set_config_path(config_path)
 core.start()
 
 logger = core.get_logger()
+logger.info('Flex is up')
 
 try:
     while True:
@@ -25,4 +26,6 @@ try:
 except:
     pass
 
-logger.info('Terminate')
+logger.info('Terminating')
+core.terminate()
+logger.info('Terminated')

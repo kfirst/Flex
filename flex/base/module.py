@@ -18,3 +18,9 @@ class Module(object):
         core会在所有模块载入完毕后调用各个模块的start方法。
         '''
         pass
+
+    def terminate(self):
+        '''
+        模块关闭时调用的方法，用于释放资源或者其他必要的操作
+        '''
+        pass

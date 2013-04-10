@@ -41,6 +41,12 @@ class Core(Module):
             self._logger.debug('Start ' + name)
             self._components[name].start()
 
+    def terminate(self):
+        for i in range(len(self._component_names) - 1, 0, -1):
+            name = self._component_names[i]
+            self._logger.debug('Terminate ' + name)
+            self._components[name].terminate()
+
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()
         if name in self._components:
