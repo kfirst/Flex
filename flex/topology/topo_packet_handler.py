@@ -15,7 +15,8 @@ class TopoPacketHandler(PacketHandler):
         self._topo = topology
         self._handlers = {
             "peer": self._handle_peer,
-            "customer": self._handle_customer
+            "customer": self._handle_customer,
+            "myself": self._handle_customer
         }
 
     def __getattr__(self, name):
@@ -48,7 +49,7 @@ class TopoPacketHandler(PacketHandler):
                         self._controllers_of_switch[sw.get_id()].insert(0, cid)
             except KeyError:
                 self._controllers_of_switch[sw.get_id()] = [cid]
-                self._switches[sw.get_id()] = sw
+                self._connections[sw.get_id()] = sw
 
     def _remove_switches(self, cid, sws):
         for sw in sws:
@@ -58,9 +59,9 @@ class TopoPacketHandler(PacketHandler):
                     controllers.remove(cid)
                 if(not controllers):
                     del self._controllers_of_switch[sw.get_id()]
-                    del self._switches[sw.get_id()]
+                    del self._connections[sw.get_id()]
             except KeyError:
-                logger.warning('Switch(' + str(sw) + ') is not found!');
+                logger.warning(str(sw) + ' is not found!');
 
     def _send_packet(self, cid, packet):
         dst = self._controllers[cid]
@@ -72,8 +73,11 @@ class TopoPacketHandler(PacketHandler):
         try:
             relation = self._relation_of_neighbor[cid]
         except KeyError:
-            logger.warning('There is no neighbor with id [' + cid + ']!')
-            return
+            if(cid == self._my_id):
+                relation = 'myself'
+            else:
+                logger.warning('There is no neighbor with id [' + cid + ']!')
+                return
         try:
             self._handlers[relation](packet)
         except KeyError:

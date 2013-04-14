@@ -12,8 +12,7 @@ logger = core.get_logger()
 
 class ConcernHandler(PacketHandler):
 
-    def __init__(self, self_controller):
-        self._myself = self_controller
+    def __init__(self):
         self._handlers = {}
         self._handlers_name = {
             Control.CONNECTION_UP: ConnectionUpHandler,
@@ -21,21 +20,17 @@ class ConcernHandler(PacketHandler):
         }
 
     def handle(self, packet):
-        types = packet.content.type
+        types = packet.content.types
         for control_type in types:
             if control_type not in self._handlers:
                 try:
                     handler_class = self._handlers_name[control_type]
+                    self._handlers[control_type] = handler_class()
                 except KeyError:
                     logger.error('No handler for type [' + control_type + '] in ' + str(packet))
-                    return
-                self._handlers[control_type] = handler_class(self._myself)
 
 
 class LocalHandler(PacketHandler):
-
-    def __init__(self, switch_pool):
-        self._pool = switch_pool
 
     def handle(self, packet):
         control_type = packet.content.type

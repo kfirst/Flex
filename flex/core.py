@@ -40,11 +40,14 @@ class Core(Module):
         for name in self._component_names:
             self._logger.debug('Start ' + name)
             self._components[name].start()
+        self._logger.info('Flex is up')
 
     def terminate(self):
+        self._logger.info('Terminating')
         for name in self._component_names[::-1]:
             self._logger.debug('Terminate ' + name)
             self._components[name].terminate()
+        self._logger.info('Terminated')
 
     def register_component(self, component_class, *args, **kw):
         name = component_class.__name__.lower()

@@ -19,15 +19,13 @@ class PoxApp(Module):
     def start(self):
         launch_pox(self._config, self)
 
-        from flex.pox.switch_pool import SwitchPool
         from flex.pox.pox_handlers import TopologyHandler
-        self._pool = SwitchPool()
-        self._topo_handler = TopologyHandler(self._pool, self._myself)
+        self._topo_handler = TopologyHandler()
 
         from flex.pox.flex_handlers import ConcernHandler
+        flex_core.network.register_handler(Packet.LOCAL_CONCERN, ConcernHandler())
         from flex.pox.flex_handlers import LocalHandler
-        flex_core.network.register_handler(Packet.LOCAL_CONCERN, ConcernHandler(self._myself))
-        flex_core.network.register_handler(Packet.LOCAL_TO_POX, LocalHandler(self._pool))
+        flex_core.network.register_handler(Packet.LOCAL_TO_POX, LocalHandler())
 
 
 pox_app = None

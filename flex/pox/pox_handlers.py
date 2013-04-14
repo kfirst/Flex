@@ -9,65 +9,78 @@ from flex.core import core as flex_core
 from flex.model.packet import *
 from flex.model.device import Switch
 
-class TopologyHandler(object):
+class ConnectionPool(object):
 
-    def __init__(self, switch_pool, self_controller):
-        self._pool = switch_pool
-        self._myself = self_controller
+    def __init__(self):
+        self._connections = {}
+
+    def set(self, key, switch):
+        self._connections[key] = switch
+
+    def get(self, key):
+        return self._connections[key]
+
+    def remove(self, key):
+        del self._connections[key]
+
+
+class ControlHandler(object):
+    _pool = ConnectionPool()
+    _myself = flex_core.myself.get_self_controller()
+
+    def _create_and_send_packet(self, content, packet_type = Packet.CONTROL_FROM_SWITCH):
+        packet = Packet(packet_type, content)
+        flex_core.network.send(self._myself, packet)
+
+    def _switch_id(self, dpid):
+        return str(self._myself.get_id()) + '_' + str(dpid)
+
+
+class TopologyHandler(ControlHandler):
+
+    def __init__(self):
         pox_core.openflow.addListeners(self)
 
     def _handle_ConnectionUp(self, event):
         connection = event.connection
-        self._pool.set(event.dpid, connection)
-        packet = self._create_topo_packet(Switch(event.dpid), True)
-        flex_core.network.send(self._myself, packet)
+        switch_id = self._switch_id(event.dpid)
+        self._pool.set(switch_id, connection)
+        packet_content = self._create_topo_content(Switch(switch_id), True)
+        self._create_and_send_packet(packet_content, Packet.TOPO)
 
     def _handle_ConnectionDown(self, event):
-        switch = event.connection
-        self._pool.remove(event.dpid)
-        packet = self._create_topo_packet(switch, False)
-        flex_core.network.send(self._myself, packet)
+        switch_id = self._switch_id(event.dpid)
+        self._pool.remove(switch_id)
+        packet_content = self._create_topo_content(Switch(switch_id), False)
+        self._create_and_send_packet(packet_content, Packet.TOPO)
 
-    def _create_topo_packet(self, switch, add = True):
+    def _create_topo_content(self, switch, add = True):
         added = set()
         removed = set()
         if add:
             added.add(switch)
         else:
             removed.add(switch)
-        content = TopologyPacketContent(self._myself, added, removed)
-        return Packet(Packet.TOPO, content)
-
-
-class ControlHandler(object):
-
-    def __init__(self, self_controller):
-        self._myself = self_controller
-
-    def _create_and_send_packet(self, content):
-        packet = Packet(Packet.CONTROL_FROM_SWITCH, content)
-        flex_core.network.send(self._myself, packet)
+        return TopologyPacketContent(self._myself, added, removed)
 
 
 class ConnectionUpHandler(ControlHandler):
 
-    def __init__(self, self_controller):
-        super(ConnectionUpHandler, self).__init__(self_controller)
+    def __init__(self):
         pox_core.openflow.addListeners(self)
 
     def _handle_ConnectionUp(self, event):
-        switch = Switch(event.dpid)
+        switch = Switch(self._switch_id(event.dpid))
         content = ConnectionUpContent(switch)
         self._create_and_send_packet(content)
 
 
 class ConnectionDownHandler(ControlHandler):
 
-    def __init__(self, self_controller):
-        super(ConnectionDownHandler, self).__init__(self_controller)
+    def __init__(self):
         pox_core.openflow.addListeners(self)
 
     def _handle_ConnectionDown(self, event):
-        switch = Switch(event.dpid)
+        switch = Switch(self._switch_id(event.dpid))
         content = ConnectionDownContent(switch)
         self._create_and_send_packet(content)
