@@ -13,3 +13,7 @@ def object_to_string(obj, *args, **kwargs):
         para.append(key + ': ' + kwargs[key].__str__())
     return s + '(' + ', '.join(para) + ')'
 
+
+def parse_packet(packet_data):
+    from pox.lib.packet.ethernet import ethernet
+    return ethernet(packet_data)

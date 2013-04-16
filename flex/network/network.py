@@ -36,10 +36,10 @@ class Network(Module):
         '''
         向指定的Controller发送Packet
         '''
+        self._track(controller, packet)
         if controller.get_address() == self._myself.get_address():
             self._dispatch(packet)
         else:
-            self._check_header(controller, packet)
             logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
             data = self._transformer.packet_to_data(packet)
             try:
@@ -56,12 +56,8 @@ class Network(Module):
         '''
         self._dispatcher._handle(packet)
 
-    def _check_header(self, controller, packet):
-        packet.tracker.src = self._myself
-        packet.tracker.dst = controller
-        path = packet.tracker.path
-        if not path or path[-1] != self._myself:
-            path.append(self._myself)
+    def _track(self, controller, packet):
+        packet.tracker.track(self._myself, controller)
 
     def _schedule(self):
         while(True):

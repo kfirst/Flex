@@ -20,12 +20,15 @@ class PoxApp(Module):
         launch_pox(self._config, self)
 
         from flex.pox.pox_handlers import TopologyHandler
-        self._topo_handler = TopologyHandler()
+        TopologyHandler()
 
         from flex.pox.flex_handlers import ConcernHandler
-        flex_core.network.register_handler(Packet.LOCAL_CONCERN, ConcernHandler())
+        ConcernHandler()
         from flex.pox.flex_handlers import LocalHandler
-        flex_core.network.register_handler(Packet.LOCAL_TO_POX, LocalHandler())
+        LocalHandler()
+
+    def terminate(self):
+        terminate_pox()
 
 
 pox_app = None
@@ -50,8 +53,12 @@ def launch_pox(config, app):
         _post_startup()
         pox_core.goUp()
 
+def terminate_pox():
+    from pox.core import core as pox_core
+    pox_core.quit()
 
 def launch():
     from pox.core import core as pox_core
-    pox_core.register('pox_app', pox_app)
-    logger.debug('POX app registered')
+    if not pox_core.hasComponent('pox_app'):
+        pox_core.register('pox_app', pox_app)
+        logger.debug('POX app registered')

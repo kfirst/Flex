@@ -13,15 +13,25 @@ class PacketTracker(object):
     '''
 
     def __init__(self):
-        self.src = None
-        self.dst = None
-        self.path = []
+        self._src = None
+        self._dst = None
+        self._path = []
+
+    def track(self, src, dst):
+        self._src = src.get_id()
+        self._dst = dst.get_id()
+        if not self._path:
+            self._path.append(self._src)
+        elif self._path[-1] != self._src:
+            self._path.append(self._src)
+            if len(self._path) > 5:
+                self._path.pop(0)
 
     def __str__(self):
         return object_to_string(self,
-                    src = self.src,
-                    dst = self.dst,
-                    path = self.path)
+                    src = self._src,
+                    dst = self._dst,
+                    path = self._path)
 
     def __repr__(self):
         return self.__str__()
@@ -89,9 +99,10 @@ class HelloPacketContent(object):
 
 
 class RegisterConcersContent(object):
-    def __init__(self, controller, concern_types):
+    def __init__(self, controller, concern_types, switches):
         self.controller = controller
         self.types = concern_types
+        self.switches = switches
 
     def __str__(self):
         return object_to_string(self,
@@ -103,40 +114,55 @@ class ControlPacketContent(object):
 
     CONNECTION_UP = 'ConnectionUp'
     CONNECTION_DOWN = 'ConnectionDown'
+    PACKET_IN = 'PacketIn'
 
-    def __init__(self, content_type):
+    def __init__(self, content_type, switch):
         self.type = content_type
-
-    def __str__(self):
-        return object_to_string(self,
-                    type = self.type)
+        self.switch = switch
 
     def __repr__(self):
         return self.__str__()
 
 
-class ApiPacketContent(ControlPacketContent):
+class PoxPacketContent(ControlPacketContent):
 
-    def __init__(self, content_type, dst):
-        super(ApiPacketContent, self).__init__(content_type)
-        self.dst = dst
+    def __init__(self, content_type, src):
+        super(PoxPacketContent, self).__init__(content_type, src)
 
     def __str__(self):
         return object_to_string(self,
                     type = self.type,
-                    dst = self.dst)
+                    src = self.switch)
 
-
-class ConnectionUpContent(ControlPacketContent):
-
-    def __init__(self, switch):
-        super(ConnectionUpContent, self).__init__(ControlPacketContent.CONNECTION_UP)
-        self.switch = switch
-
-
-class ConnectionDownContent(ControlPacketContent):
+class ConnectionUpContent(PoxPacketContent):
 
     def __init__(self, switch):
-        super(ConnectionDownContent, self).__init__(ControlPacketContent.CONNECTION_DOWN)
-        self.switch = switch
+        super(ConnectionUpContent, self).__init__(
+                ControlPacketContent.CONNECTION_UP, switch)
 
+
+class ConnectionDownContent(PoxPacketContent):
+
+    def __init__(self, switch):
+        super(ConnectionDownContent, self).__init__(
+                ControlPacketContent.CONNECTION_DOWN, switch)
+
+
+class PacketInContent(PoxPacketContent):
+
+    def __init__(self, switch, port, data):
+        super(PacketInContent, self).__init__(
+                ControlPacketContent.PACKET_IN, switch)
+        self.port = port
+        self.data = data
+
+
+class ApiPacketContent(ControlPacketContent):
+
+    def __init__(self, content_type, dst):
+        super(ApiPacketContent, self).__init__(content_type, dst)
+
+    def __str__(self):
+        return object_to_string(self,
+                    type = self.type,
+                    dst = self.switch)
