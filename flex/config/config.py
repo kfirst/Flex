@@ -39,7 +39,7 @@ class Config(Module):
         try:
             return json.loads(content)
         except ValueError:
-            self._err('The format of the config file is not correct! Json format is accepted.')
+            self._err('The format of the config file is not correct! Json format is accepted.', 'ERROR')
             return {}
 
     def _err(self, info, level = 'WARNING'):

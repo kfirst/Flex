@@ -17,7 +17,7 @@ class HelloPacketHandler(PacketHandler):
         self._topo = topology
 
         # send hello packet
-        hello_packet_content = HelloPacketContent(self._myself)
+        hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
         hello_packet = Packet(Packet.HELLO, hello_packet_content)
         for cid in self._relation_of_neighbor:
             self._send_packet(self._controllers[cid], hello_packet)
@@ -27,22 +27,21 @@ class HelloPacketHandler(PacketHandler):
 
     def handle(self, packet):
         logger.debug('Hello packet received')
-
-        switch_added = self._switches.values()
-        if switch_added:
-            topo_packet_content = TopologyPacketContent(self._myself, switch_added, set())
-            topo_packet = Packet(Packet.TOPO, topo_packet_content)
-            self._send_packet(packet.content.controller, topo_packet)
-
+        self._controllers[packet.content.controller.get_id()].up()
         if not packet.content.response:
-            hello_packet_content = HelloPacketContent(self._myself, True)
+            hello_packet_content = HelloPacketContent(self._controllers[self._my_id])
+            hello_packet_content.response = True
             hello_packet = Packet(Packet.HELLO, hello_packet_content)
             self._send_packet(packet.content.controller, hello_packet)
 
-        up_controller_id = packet.content.controller.get_id()
-        up_controller = self._controllers[up_controller_id]
-        up_controller.up()
-        core.event.happen(NeighborControllerUpEvent(up_controller, self._relation_of_neighbor[up_controller_id]))
+        switch_added = self._connection_fds.keys()
+        if switch_added:
+            topo_packet_content = TopologyPacketContent(self._controllers[self._my_id], switch_added, set())
+            topo_packet = Packet(Packet.TOPO, topo_packet_content)
+            self._send_packet(packet.content.controller, topo_packet)
+
+        up_controller = packet.content.controller
+        core.event.happen(NeighborControllerUpEvent(up_controller, self._relation_of_neighbor[up_controller.get_id()]))
 
     def _send_packet(self, dst, packet):
         core.forwarding.forward(packet, dst)

@@ -5,7 +5,8 @@
 			#core模块启动后需要载入的模块列表
 			"module": [
 				"flex.forwarding",
-				"flex.network"
+				"flex.network",
+				"flex.topology"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
@@ -34,79 +35,23 @@
 	},
 	"topology": {
 		#自己的id
-		"my_id": "c_02",
-		#controller的地址和拓扑等信息
+		"my_id": "c1",
+		#controller的地址和拓扑等信息，不需要全部controller的信息，只需要邻居的即可
 		"controllers": {
 			#controller的id
-			"c_01": {
-				"type": "flex",
-				"address": ["127.0.0.1", 12200],
-				"neighbors": {
-					"c_01_pox": "customer",
-					"c02": "provider",
-					"c_02": "peer"
-				}
-			},
-			"c_01_pox": {
+			"c1": {
 				"type": "pox",
 				"address": ["127.0.0.1", 12201],
 				"neighbors": {
-					"c01": "provider",
-					"c_01": "provider",
-					"c03":"provider",
-					"c_02": "provider"
+					"c2": "peer",
+					"c3": "provider"
 				}
 			},
-			"c_02": {
-				"type": "flex",
-				"address": ["127.0.0.1", 12210],
-				"neighbors": {
-					"c_02_pox": "customer",
-					"c01": "provider",
-					"c02": "provider",
-					"c_01": "peer",
-					"c_01_pox": "customer"
-				}
+			"c2": {
+				"address": ["127.0.0.1", 12202]
 			},
-			"c_02_pox": {
-				"type": "pox",
-				"address": ["127.0.0.1", 12211],
-				"neighbors": {
-					"c_02": "provider",
-					"c01": "provider"
-				}
-			},
-			"c01": {
-				"type": "flex",
-				"address": ["127.0.0.1", 12211],
-				"neighbors": {
-					"c_02": "customer",
-					"c_01_pox": "customer",
-					"c_02_pox": "customer",
-					"c02": "peer"
-				}
-			},
-			"c02": {
-				"type": "flex",
-				"address": ["127.0.0.1", 12211],
-				"neighbors": {
-					"c_01": "customer",
-					"c_02": "customer",
-					"c01": "peer"
-				}
-			},
-			"c03": {
-				"type": "flex",
-				"address": ["127.0.0.1", 11221],
-				"neighbors": {
-					"c_01_pox": "customer"
-				}
-			},
-			"c04": {
-				"type": "flex",
-				"address": ["127.0.0.1", "112211"],
-				"neighbors": {
-				}
+			"c3": {
+				"address": ["127.0.0.1", 12203]
 			}
 		}
 	}
