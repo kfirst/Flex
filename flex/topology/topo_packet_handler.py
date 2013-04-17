@@ -49,7 +49,7 @@ class TopoPacketHandler(PacketHandler):
                         self._controllers_of_switch[sw.get_id()].insert(0, cid)
             except KeyError:
                 self._controllers_of_switch[sw.get_id()] = [cid]
-                self._connections[sw.get_id()] = sw
+                self._connection_fds[sw.get_id()] = sw
 
     def _remove_switches(self, cid, sws):
         for sw in sws:
@@ -59,7 +59,7 @@ class TopoPacketHandler(PacketHandler):
                     controllers.remove(cid)
                 if(not controllers):
                     del self._controllers_of_switch[sw.get_id()]
-                    del self._connections[sw.get_id()]
+                    del self._connection_fds[sw.get_id()]
             except KeyError:
                 logger.warning(str(sw) + ' is not found!');
 

@@ -12,16 +12,16 @@ from flex.model.device import Switch
 class ConnectionPool(object):
 
     def __init__(self):
-        self._connections = {}
+        self._connection_fds = {}
 
     def set(self, key, switch):
-        self._connections[key] = switch
+        self._connection_fds[key] = switch
 
     def get(self, key):
-        return self._connections[key]
+        return self._connection_fds[key]
 
     def remove(self, key):
-        del self._connections[key]
+        del self._connection_fds[key]
 
 
 class ControlHandler(object):

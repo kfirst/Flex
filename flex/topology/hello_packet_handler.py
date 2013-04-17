@@ -34,7 +34,7 @@ class HelloPacketHandler(PacketHandler):
             hello_packet = Packet(Packet.HELLO, hello_packet_content)
             core.network.send(packet.content.controller, hello_packet)
 
-        switch_added = self._connections.keys()
+        switch_added = self._connection_fds.keys()
         if switch_added:
             topo_packet_content = TopologyPacketContent(self._controllers[self._my_id], switch_added, set())
             topo_packet = Packet(Packet.TOPO, topo_packet_content)

@@ -22,7 +22,7 @@ class Topology(Module):
         self._relation_of_neighbor = {}  # c->r
         self._neighbors_with_relation = {}  # r->c
         self._controllers_of_switch = {}
-        self._connections = {}
+        self._connection_fds = {}
 
     def start(self):
         network = core.network

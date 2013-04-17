@@ -61,33 +61,33 @@ class ClientHandler(ConnectionHandler):
     def __init__(self, network, data_handler):
         self._network = network
         self._handler = data_handler
-        self._request = ''
-        self._response = []
+        self._receive_buffer = ''
+        self._send_buffer = []
 
     def handle(self, event):
         if event & select.EPOLLHUP:
             self._network._remove_connection(self._connection)
         elif event & select.EPOLLIN:
             data = self._connection.recv()
-            self._request += data
+            self._receive_buffer += data
             try:
                 while(True):
-                    index = self._request.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
-                    data = self._decode_data(self._request[0:index])
+                    index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
+                    data = self._decode_data(self._receive_buffer[0:index])
                     self._handler.handle(data)
-                    self._request = self._request[index + ClientHandler.EOL_LENGTH:]
+                    self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
             except ValueError:
                 pass
         elif event & select.EPOLLOUT:
-            if self._response:
-                writen = self._connection.send(self._response[0])
-                if len(self._response[0]) == writen:
-                    del self._response[0]
+            if self._send_buffer:
+                writen = self._connection.send(self._send_buffer[0])
+                if len(self._send_buffer[0]) == writen:
+                    del self._send_buffer[0]
                 else:
-                    self._response[0] = self._response[0][writen:]
+                    self._send_buffer[0] = self._send_buffer[0][writen:]
 
     def send(self, data):
-        self._response.append(self._encode_data(data) + ClientHandler.EOL)
+        self._send_buffer.append(self._encode_data(data) + ClientHandler.EOL)
 
     def _encode_data(self, data):
         return base64.b64encode(data)

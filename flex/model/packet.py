@@ -27,6 +27,10 @@ class PacketTracker(object):
             if len(self._path) > 5:
                 self._path.pop(0)
 
+    @property
+    def src(self):
+        return self._src
+
     def __str__(self):
         return object_to_string(self,
                     src = self._src,
