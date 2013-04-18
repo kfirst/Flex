@@ -8,6 +8,7 @@ from flex.core import core
 from flex.base.handler import PacketHandler
 from flex.base.event import NeighborControllerUpEvent
 from flex.model.packet import Packet, HelloPacketContent, TopologyPacketContent
+from flex.topology.topology import Topology
 
 logger = core.get_logger()
 
@@ -28,11 +29,13 @@ class HelloPacketHandler(PacketHandler):
     def handle(self, packet):
         logger.debug('Hello packet received')
 
-        switch_added = self._switches.values()
-        if switch_added:
-            topo_packet_content = TopologyPacketContent(self._myself, switch_added, set())
-            topo_packet = Packet(Packet.TOPO, topo_packet_content)
-            self._send_packet(packet.content.controller, topo_packet)
+        controller = packet.content.controller
+        if self._relation_of_neighbor(controller) != Topology.CUSTOMER:
+            switch_added = self._switches.values()
+            if switch_added:
+                topo_packet_content = TopologyPacketContent(self._myself, switch_added, set())
+                topo_packet = Packet(Packet.TOPO, topo_packet_content)
+                self._send_packet(controller, topo_packet)
 
         if not packet.content.response:
             hello_packet_content = HelloPacketContent(self._myself, True)

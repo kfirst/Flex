@@ -103,10 +103,13 @@ class HelloPacketContent(object):
 
 
 class RegisterConcersContent(object):
-    def __init__(self, controller, concern_types, switches):
+
+    ALL_SWITCHES = 0
+
+    def __init__(self, controller, concern_types):
         self.controller = controller
+        # type => [switches] or [] for all switches
         self.types = concern_types
-        self.switches = switches
 
     def __str__(self):
         return object_to_string(self,
@@ -116,8 +119,6 @@ class RegisterConcersContent(object):
 
 class ControlPacketContent(object):
 
-    CONNECTION_UP = 'ConnectionUp'
-    CONNECTION_DOWN = 'ConnectionDown'
     PACKET_IN = 'PacketIn'
 
     def __init__(self, content_type, switch):
@@ -137,19 +138,6 @@ class PoxPacketContent(ControlPacketContent):
         return object_to_string(self,
                     type = self.type,
                     src = self.switch)
-
-class ConnectionUpContent(PoxPacketContent):
-
-    def __init__(self, switch):
-        super(ConnectionUpContent, self).__init__(
-                ControlPacketContent.CONNECTION_UP, switch)
-
-
-class ConnectionDownContent(PoxPacketContent):
-
-    def __init__(self, switch):
-        super(ConnectionDownContent, self).__init__(
-                ControlPacketContent.CONNECTION_DOWN, switch)
 
 
 class PacketInContent(PoxPacketContent):

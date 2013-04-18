@@ -21,25 +21,33 @@ class Device(object):
     def __repr__(self):
         return self.__str__()
 
+    def __hash__(self):
+        return hash(self.__id)
+
+    def __eq__(self, other):
+        if isinstance(other, Device):
+            return self.__id == other.__id
+        return False
+
 
 class Controller(Device):
 
     def __init__(self, cid, address):
         super(Controller, self).__init__(cid)
         self.__address = tuple(address)
-        self.__status = False
+        self.__up = False
 
     def get_address(self):
         return self.__address
 
     def is_up(self):
-        return self.__status
+        return self.__up
 
     def up(self):
-        self.__status = True
+        self.__up = True
 
     def down(self):
-        self.__status = False
+        self.__up = False
 
     def __str__(self):
         return object_to_string(self, self.get_id(), self.__address)
@@ -52,5 +60,9 @@ class Switch(Device):
 
 
 if __name__ == '__main__':
-    controller = Controller('cid', 'address')
-    print [controller]
+    controller1 = Controller('cid', ('127.0.0.1', 1100))
+    controller2 = Controller('cid', ('127.0.0.1', 1100))
+    s = {}
+    s[controller1] = 1
+    s[controller2] = 2
+    print s

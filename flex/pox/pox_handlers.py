@@ -28,6 +28,11 @@ class ControlHandler(object):
     _pool = ConnectionPool()
     _myself = flex_core.myself.get_self_controller()
 
+    ALL_SWITCHES = RegisterConcersContent.ALL_SWITCHES
+
+    def __init__(self):
+        self._switches = {}
+
     def _create_and_send_packet(self, content, packet_type = Packet.CONTROL_FROM_SWITCH):
         packet = Packet(packet_type, content)
         flex_core.network.send(self._myself, packet)
@@ -35,21 +40,28 @@ class ControlHandler(object):
     def _switch_id(self, dpid):
         return str(self._myself.get_id()) + '_' + str(dpid)
 
-    def _add_listeners(self, switches = None):
-        if switches:
-            for switch in switches:
-                try:
-                    self._pool.get(switch.get_id()).addListeners(self)
-                except KeyError:
-                    pass
-        else:
+    def add_switches(self, switches = []):
+        added = []
+        if self._switches == self.ALL_SWITCHES:
+            pass
+        elif switches == self.ALL_SWITCHES:
             pox_core.openflow.addListeners(self)
+            for switch in self._switches:
+                self._pool.get(switch.get_id()).removeListeners(self._switches[switch])
+            self._switches = self.ALL_SWITCHES
+        else:
+            for switch in switches:
+                if switch not in self._switches:
+                    try:
+                        listeners = self._pool.get(switch.get_id()).addListeners(self)
+                        self._switches[switch] = listeners
+                        added.append(switch)
+                    except KeyError:
+                        pass
+        return added
 
 
 class TopologyHandler(ControlHandler):
-
-    def __init__(self):
-        self._add_listeners()
 
     def _handle_ConnectionUp(self, event):
         connection = event.connection
@@ -76,9 +88,6 @@ class TopologyHandler(ControlHandler):
 
 class ConnectionUpHandler(ControlHandler):
 
-    def __init__(self, switches):
-        self._add_listeners(switches)
-
     def _handle_ConnectionUp(self, event):
         switch = Switch(self._switch_id(event.dpid))
         content = ConnectionUpContent(switch)
@@ -87,9 +96,6 @@ class ConnectionUpHandler(ControlHandler):
 
 class ConnectionDownHandler(ControlHandler):
 
-    def __init__(self, switches):
-        self._add_listeners(switches)
-
     def _handle_ConnectionDown(self, event):
         switch = Switch(self._switch_id(event.dpid))
         content = ConnectionDownContent(switch)
@@ -97,9 +103,6 @@ class ConnectionDownHandler(ControlHandler):
 
 
 class PacketInHandler(ControlHandler):
-
-    def __init__(self, switches):
-        self._add_listeners(switches)
 
     def _handle_PacketIn(self, event):
         switch = Switch(self._switch_id(event.dpid))

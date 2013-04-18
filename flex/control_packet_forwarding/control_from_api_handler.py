@@ -11,10 +11,10 @@ logger = core.get_logger()
 
 class Control_From_Api_Handler(PacketHandler):
     def __init__(self, control_packet_forwarding):
-        self._control = control_packet_forwarding
+        self._forwarding = control_packet_forwarding
 
     def __getattr__(self, name):
-        return getattr(self._control, name)
+        return getattr(self._forwarding, name)
 
     def handle(self, packet):
         target_controller = core.topology.next_hop_of_switch(packet.content.dst)

@@ -6,6 +6,7 @@ Created on 2013-3-30
 
 from flex.core import core
 from flex.base.handler import PacketHandler
+from flex.topology.topology import Topology
 
 logger = core.get_logger()
 
@@ -14,8 +15,8 @@ class TopoPacketHandler(PacketHandler):
     def __init__(self, topology):
         self._topo = topology
         self._handlers = {
-            "peer": self._handle_peer,
-            "customer": self._handle_customer,
+            Topology.PEER: self._handle_peer,
+            Topology.CUSTOMER: self._handle_customer,
             "myself": self._handle_customer
         }
 

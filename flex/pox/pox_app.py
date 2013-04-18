@@ -20,7 +20,7 @@ class PoxApp(Module):
         launch_pox(self._config, self)
 
         from flex.pox.pox_handlers import TopologyHandler
-        TopologyHandler()
+        TopologyHandler().add_switches()
 
         from flex.pox.flex_handlers import ConcernHandler
         ConcernHandler()

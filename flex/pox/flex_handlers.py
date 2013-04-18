@@ -15,23 +15,25 @@ class ConcernHandler(PacketHandler):
     def __init__(self):
         self._handlers = {}
         self._handlers_name = {
-            Control.CONNECTION_UP: ConnectionUpHandler,
-            Control.CONNECTION_DOWN: ConnectionDownHandler,
             Control.PACKET_IN: PacketInHandler
         }
         core.network.register_handler(Packet.LOCAL_CONCERN, self)
 
     def handle(self, packet):
         types = packet.content.types
-        switches = packet.content.switches
         for control_type in types:
-            if control_type not in self._handlers:
+            switches = types[control_type]
+            try:
+                handler = self._handlers[control_type]
+            except KeyError:
                 try:
-                    handler_class = self._handlers_name[control_type]
-                    self._handlers[control_type] = handler_class(switches)
-                    logger.debug('Add handler handled [' + control_type + '] for switches ' + switches)
+                    handler = self._handlers_name[control_type]()
+                    self._handlers[control_type] = handler
                 except KeyError:
                     logger.error('Handler handled [' + control_type + '] is not found in ' + str(packet))
+                    continue
+            added = handler.add_switches(switches)
+            logger.debug('Add handler handled [' + control_type + '] for ' + added + ' in ' + switches)
 
 
 class LocalHandler(PacketHandler):

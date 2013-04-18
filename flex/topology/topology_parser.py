@@ -7,6 +7,7 @@ Created on 2013-3-26
 
 from flex.model.device import Controller
 from flex.core import core
+from flex.topology.topology import Topology
 
 class TopologyParser(object):
 
@@ -41,13 +42,13 @@ class TopologyParser(object):
         customer = set()
         provider = set()
         for cid in neighbor_info:
-            if neighbor_info[cid] == 'peer':
+            if neighbor_info[cid] == Topology.PEER:
                 peer.add(cid)
-            elif neighbor_info[cid] == 'customer':
+            elif neighbor_info[cid] == Topology.CUSTOMER:
                 customer.add(cid)
-            elif neighbor_info[cid] == 'provider':
+            elif neighbor_info[cid] == Topology.PROVIDER:
                 provider.add(cid)
-        relation['peer'] = peer
-        relation['customer'] = customer
-        relation['provider'] = provider
+        relation[Topology.PEER] = peer
+        relation[Topology.CUSTOMER] = customer
+        relation[Topology.PROVIDER] = provider
         return relation
