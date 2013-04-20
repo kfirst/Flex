@@ -6,8 +6,7 @@
 			"module": [
 				"flex.forwarding",
 				"flex.network",
-				"flex.topology",
-				"flex.selector"
+				"flex.topology"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息

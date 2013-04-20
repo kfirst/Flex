@@ -17,7 +17,7 @@ class ConcernHandler(PacketHandler):
         self._handlers_name = {
             Control.PACKET_IN: PacketInHandler
         }
-        core.network.register_handler(Packet.LOCAL_CONCERN, self)
+        core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 
     def handle(self, packet):
         types = packet.content.types
@@ -39,7 +39,7 @@ class ConcernHandler(PacketHandler):
 class LocalHandler(PacketHandler):
 
     def __init__(self):
-        core.network.register_handler(Packet.LOCAL_TO_POX, self)
+        core.forwarding.register_handler(Packet.LOCAL_TO_POX, self)
 
     def handle(self, packet):
         control_type = packet.content.type

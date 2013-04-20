@@ -4,10 +4,9 @@
 		"core": {
 			#core模块启动后需要载入的模块列表
 			"module": [
+				"flex.forwarding",
 				"flex.network",
 				"flex.topology",
-				"flex.selector",
-				"flex.control_packet_forwarding",
 				"flex.pox"
 			]
 		},
@@ -40,32 +39,22 @@
 	"topology": {
 		#自己的id
 		"my_id": "c2",
-		#controller的地址和拓扑等信息
+		#controller的地址和拓扑等信息，不需要全部controller的信息，只需要邻居的即可
 		"controllers": {
 			#controller的id
-			"c1": {
-				"type": "pox",
-				"address": ["127.0.0.1", 11101],
-				"neighbors": {
-					"c2": "peer",
-					"c3": "provider"
-				}
-			},
 			"c2": {
 				"type": "pox",
-				"address": ["127.0.0.1", 11102],
+				"address": ["127.0.0.1", 12202],
 				"neighbors": {
 					"c1": "peer",
 					"c3": "provider"
 				}
 			},
+			"c1": {
+				"address": ["127.0.0.1", 12201]
+			},
 			"c3": {
-				"type": "flex",
-				"address": ["127.0.0.1", 11103],
-				"neighbors": {
-					"c1": "customer",
-					"c2": "customer"
-				}
+				"address": ["127.0.0.1", 12203]
 			}
 		}
 	}

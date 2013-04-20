@@ -1,3 +1,4 @@
+# encoding: utf-8
 '''
 Created on 2013-3-30
 
@@ -7,45 +8,48 @@ Created on 2013-3-30
 from flex.core import core
 from flex.base.handler import PacketHandler
 from flex.base.event import NeighborControllerUpEvent
-from flex.model.packet import Packet, HelloPacketContent, TopologyPacketContent
-from flex.topology.topology import Topology
+from flex.model.packet import HelloPacketContent, Packet
 
 logger = core.get_logger()
 
 class HelloPacketHandler(PacketHandler):
+    '''
+    维护邻居信息的工作原理是：
+    当Controller1的topology模块启动起来后，将向其所有的邻居发送Hello报文；
+    当Controller2收到Hello报文时，它就认为Controller1 Up了，
+    并产生NeighborControllerUp事件，然后回复一个response Hello报文；
+    当Controller1收到response Hello报文时，它就认为Controller2 Up了，
+    并产生NeighborControllerUp事件。
+    '''
 
-    def __init__(self, topology):
-        self._topo = topology
-
-        # send hello packet
+    def __init__(self, myself, relation_of_neighbor):
+        self._myself = myself
+        self._relation_of_neighbor = relation_of_neighbor
         hello_packet_content = HelloPacketContent(self._myself)
-        hello_packet = Packet(Packet.HELLO, hello_packet_content)
-        for cid in self._relation_of_neighbor:
-            self._send_packet(self._controllers[cid], hello_packet)
+        self._packet = Packet(Packet.HELLO, hello_packet_content)
+        # send hello packet
+        hello_packet = self._make_hello_packet()
+        for neighbor in self._relation_of_neighbor:
+            self._send_packet(hello_packet, neighbor)
 
-    def __getattr__(self, name):
-        return getattr(self._topo, name)
-
-    def handle(self, packet):
+    def handle_packet(self, packet):
         logger.debug('Hello packet received')
 
-        controller = packet.content.controller
-        if self._relation_of_neighbor(controller) != Topology.CUSTOMER:
-            switch_added = self._switches.values()
-            if switch_added:
-                topo_packet_content = TopologyPacketContent(self._myself, switch_added, set())
-                topo_packet = Packet(Packet.TOPO, topo_packet_content)
-                self._send_packet(controller, topo_packet)
-
+        up_controller = packet.content.controller
+        try:
+            relation = self._relation_of_neighbor[up_controller]
+        except KeyError:
+            logger.warning('There is no neighbor ' + str(up_controller))
+            return
         if not packet.content.response:
-            hello_packet_content = HelloPacketContent(self._myself, True)
-            hello_packet = Packet(Packet.HELLO, hello_packet_content)
-            self._send_packet(packet.content.controller, hello_packet)
+            hello_packet = self._make_hello_packet(True)
+            self._send_packet(hello_packet, up_controller)
 
-        up_controller_id = packet.content.controller.get_id()
-        up_controller = self._controllers[up_controller_id]
-        up_controller.up()
-        core.event.happen(NeighborControllerUpEvent(up_controller, self._relation_of_neighbor[up_controller_id]))
+        core.event.happen(NeighborControllerUpEvent(up_controller, relation))
 
-    def _send_packet(self, dst, packet):
+    def _make_hello_packet(self, response = False):
+        self._packet.content.response = response
+        return self._packet
+
+    def _send_packet(self, packet, dst):
         core.forwarding.forward(packet, dst)

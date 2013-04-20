@@ -16,7 +16,11 @@ class Forwarding(Module):
     '''
     系统报文的接收和发送，
     接收时，通过检查报文的类型字段，将收到的报文转发关心该类型报文的模块；
-    发送时，通过network模块，将报文发送给指定的controller，若controller为自己则直接转给关心该类型报文的模块。
+    发送时，通过network模块，将报文发送给指定的controller，
+    若controller为自己或为空则直接转给关心该类型报文的模块。
+    
+    因此，Forwarding模块可以作为Controller间报文传递的渠道，
+    也可以作为模块间交互信息的渠道
     '''
 
     def __init__(self, controller):
@@ -35,7 +39,8 @@ class Forwarding(Module):
 
     def forward(self, packet, controller = None):
         '''
-        向指定的Controller发送Packet
+        若指定Controller，则向指定的Controller发送Packet，指定的Controller只能是邻居。
+        若不指定Controlller，则自己Controller内部关心该类型报文的模块将接收到该报文
         '''
         self._track(packet, controller)
         if not controller or controller.get_address() == self._myself.get_address():
@@ -47,7 +52,7 @@ class Forwarding(Module):
 
     def _dispatch(self, packet):
         '''
-        向自己发送报文，为了简化模块的设计，模块与模块之间的通信可以只用该方法，
+        向自己发送报文，为了简化模块的设计，模块与模块之间的通信可以使用该方法，
         该方法会直接调用关心该类型报文的Handler，而无需经过内核转发
         '''
         self._dispatcher._handle(packet)

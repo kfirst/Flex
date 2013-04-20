@@ -7,7 +7,6 @@ def launch():
     topo = Topology()
 
     topo._myself = topology_parser.myself
-    topo._controllers = topology_parser.controllers
     topo._relation_of_neighbor = topology_parser.neighbors
     topo._neighbors_with_relation = topology_parser.relations
 

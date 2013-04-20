@@ -46,7 +46,8 @@ class Packet(object):
     报文，该类中的常量表示报文的类型
     '''
 
-    TOPO = 'topo'
+    TOPO_SWITCH = 'topo_switch'
+    TOPO_CONTROLLER = 'topo_controller'
     HELLO = 'hello'
     CONTROL_FROM_SWITCH = 'control_from_switch'
     LOCAL_TO_API = 'local_to_api'
@@ -70,18 +71,18 @@ class Packet(object):
         return self.__str__()
 
 
-class TopologyPacketContent(object):
+class TopologySwitchPacketContent(object):
 
-    def __init__(self, controller, switches_added, switches_removed):
+    def __init__(self, controller, switches_update, switches_remove):
         self.controller = controller
-        self.switches_added = switches_added
-        self.switches_removed = switches_removed
+        self.update = switches_update
+        self.remove = switches_remove
 
     def __str__(self):
         return object_to_string(self,
                     controller = self.controller,
-                    switches_added = self.switches_added,
-                    switches_removed = self.switches_removed)
+                    update = self.update,
+                    remove = self.remove)
 
     def __repr__(self):
         return self.__str__()
@@ -95,7 +96,7 @@ class HelloPacketContent(object):
 
     def __str__(self):
         return object_to_string(self,
-                    if_response = self.response,
+                    response = self.response,
                     controller = self.controller)
 
     def __repr__(self):

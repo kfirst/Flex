@@ -33,7 +33,7 @@ class TopologyParser(object):
     def _parse_neighbors(self, neighbor_info):
         neighbor = {}
         for cid in neighbor_info:
-            neighbor[cid] = neighbor_info[cid]
+            neighbor[self.controllers[cid]] = neighbor_info[cid]
         return neighbor
 
     def _parse_relations(self, neighbor_info):
@@ -42,12 +42,13 @@ class TopologyParser(object):
         customer = set()
         provider = set()
         for cid in neighbor_info:
+            controller = self.controllers[cid]
             if neighbor_info[cid] == Topology.PEER:
-                peer.add(cid)
+                peer.add(controller)
             elif neighbor_info[cid] == Topology.CUSTOMER:
-                customer.add(cid)
+                customer.add(controller)
             elif neighbor_info[cid] == Topology.PROVIDER:
-                provider.add(cid)
+                provider.add(controller)
         relation[Topology.PEER] = peer
         relation[Topology.CUSTOMER] = customer
         relation[Topology.PROVIDER] = provider

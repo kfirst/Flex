@@ -23,6 +23,7 @@ class Network(Module):
     def __init__(self, address, backlog):
         self._address = address
         self._backlog = backlog
+        self._run = True
         # address => connection
         self._connections = {}
         # address => fd
@@ -78,10 +79,14 @@ class Network(Module):
             pass
 
     def _schedule(self):
-        while True:
+        while self._run:
             events = self._epoll.poll(-1)
             for fd, event in events:
-                self._connection_handlers[fd].handle(event)
+                try:
+                    self._connection_handlers[fd].handle(event)
+                except:
+                    pass
+        self._epoll.close()
 
     def start(self):
         self._start_server()
@@ -99,12 +104,13 @@ class Network(Module):
         thread.start()
 
     def terminate(self):
+        self._epoll.unregister(self._server.get_fileno())
         for address in self._connection_fds:
             fd = self._connection_fds[address]
-            self.__epoll.unregister(fd)
+            self._epoll.unregister(fd)
             self._connections[address].close()
         self._server.close()
-        self._epoll.close()
+        self._run = False
 
 
 class ServerHandler(ConnectionHandler):

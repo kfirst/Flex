@@ -35,19 +35,9 @@ class Controller(Device):
     def __init__(self, cid, address):
         super(Controller, self).__init__(cid)
         self.__address = tuple(address)
-        self.__up = False
 
     def get_address(self):
         return self.__address
-
-    def is_up(self):
-        return self.__up
-
-    def up(self):
-        self.__up = True
-
-    def down(self):
-        self.__up = False
 
     def __str__(self):
         return object_to_string(self, self.get_id(), self.__address)

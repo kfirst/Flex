@@ -36,6 +36,6 @@ class Event(Module):
             logger.debug(str(event) + ' happened')
             handlers = self._handlers[name]
             for handler in handlers:
-                handler.handle(event)
+                handler.handle_event(event)
         except KeyError:
             pass

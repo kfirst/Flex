@@ -35,7 +35,7 @@ class ControlHandler(object):
 
     def _create_and_send_packet(self, content, packet_type = Packet.CONTROL_FROM_SWITCH):
         packet = Packet(packet_type, content)
-        flex_core.network.send(self._myself, packet)
+        flex_core.forwarding.forward(packet)
 
     def _switch_id(self, dpid):
         return str(self._myself.get_id()) + '_' + str(dpid)
@@ -63,43 +63,31 @@ class ControlHandler(object):
 
 class TopologyHandler(ControlHandler):
 
+    def __init__(self):
+        super(TopologyHandler, self).__init__()
+        pox_core.openflow.addListeners(self)
+
     def _handle_ConnectionUp(self, event):
         connection = event.connection
         switch_id = self._switch_id(event.dpid)
         self._pool.set(switch_id, connection)
         packet_content = self._create_topo_content(Switch(switch_id), True)
-        self._create_and_send_packet(packet_content, Packet.TOPO)
+        self._create_and_send_packet(packet_content, Packet.TOPO_SWITCH)
 
     def _handle_ConnectionDown(self, event):
         switch_id = self._switch_id(event.dpid)
         self._pool.remove(switch_id)
         packet_content = self._create_topo_content(Switch(switch_id), False)
-        self._create_and_send_packet(packet_content, Packet.TOPO)
+        self._create_and_send_packet(packet_content, Packet.TOPO_SWITCH)
 
     def _create_topo_content(self, switch, add = True):
-        added = set()
-        removed = set()
+        added = []
+        removed = []
         if add:
-            added.add(switch)
+            added.append((switch, set()))
         else:
-            removed.add(switch)
-        return TopologyPacketContent(self._myself, added, removed)
-
-
-class ConnectionUpHandler(ControlHandler):
-
-    def _handle_ConnectionUp(self, event):
-        switch = Switch(self._switch_id(event.dpid))
-        content = ConnectionUpContent(switch)
-        self._create_and_send_packet(content)
-
-
-class ConnectionDownHandler(ControlHandler):
-
-    def _handle_ConnectionDown(self, event):
-        switch = Switch(self._switch_id(event.dpid))
-        content = ConnectionDownContent(switch)
-        self._create_and_send_packet(content)
+            removed.append(switch)
+        return TopologySwitchPacketContent(self._myself, added, removed)
 
 
 class PacketInHandler(ControlHandler):

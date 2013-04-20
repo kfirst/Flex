@@ -30,7 +30,7 @@ class PacketHandler(object):
     '''
     处理Packet的Handler，可以注册在Network模块中用于处理接收到的Packet
     '''
-    def handle(self, packet):
+    def handle_packet(self, packet):
         pass
 
 
@@ -38,5 +38,5 @@ class EventHandler(object):
     '''
     处理事件的Handler，可以注册在Event模块处理相应的事件
     '''
-    def handle(self, event):
+    def handle_event(self, event):
         pass
