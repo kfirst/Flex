@@ -64,6 +64,9 @@ class Core(Module):
         self._components[name] = obj
         self._component_names.append(name)
 
+    def has_component(self, name):
+        return name in self._components
+
     def get_logger(self, name = None):
         return self.logger.get_logger(name, 1)
 

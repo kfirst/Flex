@@ -43,7 +43,6 @@
 		"controllers": {
 			#controller的id
 			"c2": {
-				"type": "pox",
 				"address": ["127.0.0.1", 12202],
 				"neighbors": {
 					"c1": "peer",

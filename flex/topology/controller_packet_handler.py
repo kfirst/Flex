@@ -31,9 +31,6 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
     def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
         super(ControllerPacketHandler, self).__init__(myself, relation_of_neighbor, neighbors_with_relation)
 
-    def next_hop_of_controller(self, controller):
-        return self.next_hop_of_device(controller)
-
     def handle_event(self, event):
         relation = event.relation
         if relation == self.PEER or relation == self.CUSTOMER:

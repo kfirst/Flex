@@ -7,9 +7,11 @@ Created on 2013-3-19
 
 from flex.core import core
 from flex.base.module import Module
-from flex.base.exception import SwitchNotFoundException
+from flex.base.exception import SwitchNotFoundException, \
+    ControllerNotFoundException
 from flex.model.packet import Packet
 from flex.base import event
+from flex.model.device import Switch, Controller
 
 logger = core.get_logger()
 
@@ -48,11 +50,29 @@ class Topology(Module):
         core.forwarding.register_handler(Packet.TOPO_CONTROLLER, self.controller)
         core.event.register_handler(event.NeighborControllerUpEvent, self.controller)
 
-    def next_hop_of_switch(self, switch):
-        try:
-            return self.switch.next_hop_of_switch(switch)
-        except KeyError:
-            raise SwitchNotFoundException(str(switch) + ' is not found!')
+    def nexthop(self, device):
+        if isinstance(device, Switch):
+            try:
+                return self.switch.nexthop_of_device(device)
+            except KeyError:
+                raise SwitchNotFoundException(str(device) + ' is not found!')
+        elif isinstance(device, Controller):
+            try:
+                return self.controller.nexthop_of_device(device)
+            except KeyError:
+                raise ControllerNotFoundException(str(device) + ' is not found!')
+
+    def distance(self, device):
+        if isinstance(device, Switch):
+            try:
+                return self.switch.distance_of_device(device)
+            except KeyError:
+                raise SwitchNotFoundException(str(device) + ' is not found!')
+        elif isinstance(device, Controller):
+            try:
+                return self.controller.distance_of_device(device)
+            except KeyError:
+                raise ControllerNotFoundException(str(device) + ' is not found!')
 
     def get_neighbor_relation(self, controller):
         return self.hello.get_neighbor_relation(controller)

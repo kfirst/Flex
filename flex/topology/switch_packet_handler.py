@@ -31,9 +31,6 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
     def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
         super(SwitchPacketHandler, self).__init__(myself, relation_of_neighbor, neighbors_with_relation)
 
-    def next_hop_of_switch(self, switch):
-        return self.next_hop_of_device(switch)
-
     def handle_event(self, event):
         relation = event.relation
         if relation == self.PEER or relation == self.PROVIDER:

@@ -55,4 +55,4 @@ if __name__ == '__main__':
     s = {}
     s[controller1] = 1
     s[controller2] = 2
-    print s
+    print controller1 in s

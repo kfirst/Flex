@@ -42,7 +42,6 @@
 		"controllers": {
 			#controller的id
 			"c3": {
-				"type": "flex",
 				"address": ["127.0.0.1", 12203],
 				"neighbors": {
 					"c2": "customer",

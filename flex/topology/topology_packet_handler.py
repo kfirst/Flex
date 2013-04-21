@@ -23,8 +23,11 @@ class TopologyPacketHandler(object):
     def _send_packet(self, packet, dst):
         core.forwarding.forward(packet, dst)
 
-    def next_hop_of_device(self, device):
+    def nexthop_of_device(self, device):
         return self._nexthop_of_device[device][0]
+
+    def distance_of_device(self, device):
+        return len(self._nexthop_of_device[device][1])
 
     def _remove(self, src, removed_devices):
         remove = []

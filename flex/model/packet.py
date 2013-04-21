@@ -124,15 +124,17 @@ class RegisterConcersContent(object):
 
     ALL_SWITCHES = 0
 
-    def __init__(self, controller, concern_types):
+    def __init__(self, controller, concern_type, switches):
         self.controller = controller
-        # type => [switches] or [] for all switches
-        self.types = concern_types
+        self.type = concern_type
+        # [Switch] or ALL_SWITCHES for all switches
+        self.switches = switches
 
     def __str__(self):
         return object_to_string(self,
                     controller = self.controller,
-                    types = self.types)
+                    type = self.type,
+                    switches = self.switches)
 
 
 class ControlPacketContent(object):
