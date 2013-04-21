@@ -9,10 +9,11 @@ from flex.core import core
 from flex.base.handler import PacketHandler, EventHandler
 from flex.model.packet import TopologySwitchPacketContent, Packet
 from flex.topology.topology import Topology
+from flex.topology.topology_packet_handler import TopologyPacketHandler
 
 logger = core.get_logger()
 
-class SwitchPacketHandler(PacketHandler, EventHandler):
+class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
     '''
     维护邻居可达的Switch信息的工作原理是：
     当Controller的一个peer或provider Controller Up时，
@@ -28,42 +29,17 @@ class SwitchPacketHandler(PacketHandler, EventHandler):
     CUSTOMER = Topology.CUSTOMER
 
     def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
-        self._myself = myself
-        self._my_id = myself.get_id();
-        self._relation_of_neighbor = relation_of_neighbor
-        self._neighbors_with_relation = neighbors_with_relation
-        # {switch: {controller: path}}
-        self._controllers_of_switch = {}
-        # {switch: (controller, path)}
-        self._nexthop_of_switch = {}
-
-    def _send_packet(self, packet, dst):
-        core.forwarding.forward(packet, dst)
+        super(SwitchPacketHandler, self).__init__(myself, relation_of_neighbor, neighbors_with_relation)
 
     def next_hop_of_switch(self, switch):
-        return self._nexthop_of_switch[switch][0]
-
-    def get_neighbor_relation(self, controller):
-        return self._relation_of_neighbor[controller]
-
-    def get_neighbors(self):
-        return set(self._relation_of_neighbor.keys())
-
-    def get_peers(self):
-        return set(self._neighbors_with_relation[self.PEER])
-
-    def get_providers(self):
-        return set(self._neighbors_with_relation[self.PROVIDER])
-
-    def get_customers(self):
-        return set(self._neighbors_with_relation[self.CUSTOMER])
+        return self.next_hop_of_device(switch)
 
     def handle_event(self, event):
         relation = event.relation
         if relation == self.PEER or relation == self.PROVIDER:
             dst = event.controller
             update = []
-            for switch, path in self._nexthop_of_switch.items():
+            for switch, path in self._nexthop_of_device.items():
                 update.append((switch, path[1]))
             if update:
                 content = TopologySwitchPacketContent(self._myself, update, [])
@@ -87,8 +63,7 @@ class SwitchPacketHandler(PacketHandler, EventHandler):
         else:
             logger.warning('Provider ' + controller + 'should NOT send ' + packet)
 
-    def _handle_packet(self, packet, controller):
-        src = packet.content.controller.get_id()
+    def _handle_packet(self, packet, src):
         remove, update = self._remove(src, packet.content.remove)
         update += self._update(src, packet.content.update)
         # network send packet
@@ -96,56 +71,8 @@ class SwitchPacketHandler(PacketHandler, EventHandler):
             content = TopologySwitchPacketContent(self._myself, update, remove)
             packet = Packet(Packet.TOPO_SWITCH, content)
             for c in self._neighbors_with_relation[self.PROVIDER]:
-                if c != controller:
+                if c != src:
                     self._send_packet(packet, c)
             for c in self._neighbors_with_relation[self.PEER]:
-                if c != controller:
+                if c != src:
                     self._send_packet(packet, c)
-
-    def _remove(self, src, switches):
-        remove = []
-        update = []
-        for switch in switches:
-            try:
-                controllers = self._controllers_of_switch[switch]
-                nexthop = self._nexthop_of_switch[switch]
-                controllers.pop(src, None)
-                if src == nexthop[0]:
-                    remove.append(switch)
-                    shortest = None
-                    for controller in controllers.items():
-                        if shortest == None or len(controller[1]) < len(shortest[1]):
-                            shortest = controller
-                    if shortest == None:
-                        del self._nexthop_of_switch[switch]
-                    else:
-                        self._nexthop_of_switch[switch] = shortest
-                        update.append((switch, shortest[1]))
-            except KeyError:
-                logger.warning(str(switch) + ' is not found!');
-        return (remove, update)
-
-    def _update(self, src, switches):
-        update = []
-        for switch, path in switches:
-            if self._my_id in path:
-                continue
-            path.add(self._myself.get_id())
-            try:
-                controllers = self._controllers_of_switch[switch]
-                nexthop = self._nexthop_of_switch[switch]
-                if src in controllers:
-                    if len(path) < len(controllers[src]):
-                        controllers[src] = path
-                else:
-                    controllers[src] = path
-                if len(path) < len(nexthop[1]):
-                    nexthop[0] = src
-                    nexthop[1] = path
-                    update.append((switch, path))
-            except KeyError:
-                self._controllers_of_switch[switch] = {src: path}
-                nexthop = [src, path]
-                self._nexthop_of_switch[switch] = nexthop
-                update.append((switch, path))
-        return update

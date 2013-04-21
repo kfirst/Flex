@@ -88,6 +88,23 @@ class TopologySwitchPacketContent(object):
         return self.__str__()
 
 
+class TopologyControllerPacketContent(object):
+
+    def __init__(self, controller, controllers_update, controllers_remove):
+        self.controller = controller
+        self.update = controllers_update
+        self.remove = controllers_remove
+
+    def __str__(self):
+        return object_to_string(self,
+                    controller = self.controller,
+                    update = self.update,
+                    remove = self.remove)
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class HelloPacketContent(object):
 
     def __init__(self, controller, response = False):
@@ -122,9 +139,10 @@ class ControlPacketContent(object):
 
     PACKET_IN = 'PacketIn'
 
-    def __init__(self, content_type, switch):
+    def __init__(self, content_type, src, dst):
         self.type = content_type
-        self.switch = switch
+        self.src = src
+        self.dst = dst
 
     def __repr__(self):
         return self.__str__()
@@ -132,8 +150,8 @@ class ControlPacketContent(object):
 
 class PoxPacketContent(ControlPacketContent):
 
-    def __init__(self, content_type, src):
-        super(PoxPacketContent, self).__init__(content_type, src)
+    def __init__(self, content_type, src, dst):
+        super(PoxPacketContent, self).__init__(content_type, src, dst)
 
     def __str__(self):
         return object_to_string(self,
@@ -143,17 +161,17 @@ class PoxPacketContent(ControlPacketContent):
 
 class PacketInContent(PoxPacketContent):
 
-    def __init__(self, switch, port, data):
+    def __init__(self, switch, controller, port, data):
         super(PacketInContent, self).__init__(
-                ControlPacketContent.PACKET_IN, switch)
+                ControlPacketContent.PACKET_IN, switch, controller)
         self.port = port
         self.data = data
 
 
 class ApiPacketContent(ControlPacketContent):
 
-    def __init__(self, content_type, dst):
-        super(ApiPacketContent, self).__init__(content_type, dst)
+    def __init__(self, content_type, src, dst):
+        super(ApiPacketContent, self).__init__(content_type, src, dst)
 
     def __str__(self):
         return object_to_string(self,

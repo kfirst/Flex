@@ -36,12 +36,17 @@ class Topology(Module):
 
     def start(self):
         from flex.topology.hello_packet_handler import HelloPacketHandler
-        self.hello = HelloPacketHandler(self._myself, self._relation_of_neighbor)
+        self.hello = HelloPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
         from flex.topology.switch_packet_handler import SwitchPacketHandler
         self.switch = SwitchPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
+        from flex.topology.controller_packet_handler import ControllerPacketHandler
+        self.controller = ControllerPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
+
         core.forwarding.register_handler(Packet.HELLO, self.hello)
         core.forwarding.register_handler(Packet.TOPO_SWITCH, self.switch)
         core.event.register_handler(event.NeighborControllerUpEvent, self.switch)
+        core.forwarding.register_handler(Packet.TOPO_CONTROLLER, self.controller)
+        core.event.register_handler(event.NeighborControllerUpEvent, self.controller)
 
     def next_hop_of_switch(self, switch):
         try:
@@ -50,16 +55,16 @@ class Topology(Module):
             raise SwitchNotFoundException(str(switch) + ' is not found!')
 
     def get_neighbor_relation(self, controller):
-        return self.switch.get_neighbor_relation(controller)
+        return self.hello.get_neighbor_relation(controller)
 
     def get_neighbors(self):
-        return self.switch.get_neighbors()
+        return self.hello.get_neighbors()
 
     def get_peers(self):
-        return self.switch.get_peers()
+        return self.hello.get_peers()
 
     def get_providers(self):
-        return self.switch.get_providers()
+        return self.hello.get_providers()
 
     def get_customers(self):
-        return self.switch.get_customers()
+        return self.hello.get_customers()
