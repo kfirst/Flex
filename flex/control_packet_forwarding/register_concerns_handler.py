@@ -8,7 +8,6 @@ Created on 2013-4-6
 from flex.core import core
 from flex.base.handler import PacketHandler
 from flex.model.packet import Packet, RegisterConcersContent
-from flex.myself.myself import Myself
 
 logger = core.get_logger()
 
@@ -16,36 +15,37 @@ class RegisterConcernsHandler(PacketHandler):
 
     ALL_SWITCHES = RegisterConcersContent.ALL_SWITCHES
 
-    def __init__(self):
+    def __init__(self, controller_concerns):
         # {controller: {type: set(switch)}}
-        self._controller_concerns = {}
+        self._controller_concerns = controller_concerns
 
     def handle_packet(self, packet):
         logger.debug('Register Concerns packet received')
         controller = packet.content.controller
-        concern_type = packet.content.type
-        switches = packet.content.switches
-        send_to_neighbor = False
-        try:
-            controller_concerns = self._controller_concerns[controller]
+        concern_types = packet.content.types
+        new_concern_types = {}
+        for concern_type, switches in concern_types.items():
             try:
-                added_switches = controller_concerns[concern_type]
-                if added_switches != self.ALL_SWITCHES:
-                    if switches != self.ALL_SWITCHES:
-                        switches -= added_switches
-                        if switches:
-                            added_switches.update(switches)
-                            send_to_neighbor = True
-                    else:
-                        controller_concerns[concern_type] = self.ALL_SWITCHES
-                        send_to_neighbor = True
+                controller_concerns = self._controller_concerns[controller]
+                try:
+                    added_switches = controller_concerns[concern_type]
+                    if added_switches != self.ALL_SWITCHES:
+                        if switches != self.ALL_SWITCHES:
+                            switches -= added_switches
+                            if switches:
+                                added_switches.update(switches)
+                                new_concern_types[concern_type] = switches
+                        else:
+                            controller_concerns[concern_type] = self.ALL_SWITCHES
+                            new_concern_types[concern_type] = switches
+                except KeyError:
+                    controller_concerns[concern_type] = switches
+                    new_concern_types[concern_type] = switches
             except KeyError:
-                controller_concerns[concern_type] = switches
-                send_to_neighbor = True
-        except KeyError:
-            self._controller_concerns[controller] = {concern_type: switches}
-            send_to_neighbor = True
-        if send_to_neighbor:
+                self._controller_concerns[controller] = {concern_type: switches}
+                new_concern_types[concern_type] = switches
+        if new_concern_types:
+            packet.content.types = new_concern_types
             self._send_to_neighbor(packet)
         if core.has_component('pox'):
             self._send_to_local(packet)

@@ -96,5 +96,5 @@ class PacketInHandler(ControlHandler):
         switch = Switch(self._switch_id(event.dpid))
         port = event.port
         data = event.data
-        content = PacketInContent(switch, port, data)
+        content = PacketInContent(switch, None, port, data)
         self._create_and_send_packet(content)

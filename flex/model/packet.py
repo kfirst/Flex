@@ -124,11 +124,10 @@ class RegisterConcersContent(object):
 
     ALL_SWITCHES = 0
 
-    def __init__(self, controller, concern_type, switches):
+    def __init__(self, controller, concern_types):
         self.controller = controller
-        self.type = concern_type
-        # [Switch] or ALL_SWITCHES for all switches
-        self.switches = switches
+        # {type: [Switch] or ALL_SWITCHES for all switches}
+        self.types = concern_types
 
     def __str__(self):
         return object_to_string(self,

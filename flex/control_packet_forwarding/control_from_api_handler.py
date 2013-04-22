@@ -9,20 +9,15 @@ from flex.model.packet import  Packet
 
 logger = core.get_logger()
 
-class Control_From_Api_Handler(PacketHandler):
-    def __init__(self, control_packet_forwarding):
-        self._forwarding = control_packet_forwarding
+class ControlFromApiHandler(PacketHandler):
 
-    def __getattr__(self, name):
-        return getattr(self._forwarding, name)
+    def __init__(self, self_controller):
+        self._myself = self_controller
 
     def handle(self, packet):
-        target_controller = core.topology.next_hop_of_switch(packet.content.dst)
-
-        if target_controller.get_id() != self.self_id:
-            core.network.send(target_controller, packet)
-        else:
+        nexthop = core.topology.nexthop(packet.content.dst)
+        if nexthop == self._myself:
             packet.type = Packet.LOCAL_TO_POX
-            core.network.send(target_controller, packet)
-
-
+            core.forwarding.forward(packet)
+        else:
+            core.forwarding.forward(packet, nexthop)
