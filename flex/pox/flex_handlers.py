@@ -15,7 +15,9 @@ class ConcernHandler(PacketHandler):
     def __init__(self):
         self._handlers = {}
         self._handlers_name = {
-            Control.PACKET_IN: PacketInHandler
+            Control.PACKET_IN: PacketInHandler,
+            Control.CONNECTION_UP: ConnectionUpHandler,
+            Control.CONNECTION_DOWN: ConnectionDownHandler
         }
         core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 

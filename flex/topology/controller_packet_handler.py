@@ -58,7 +58,7 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
         if relation == self.PEER or relation == self.PROVIDER:
             self._handle_packet(packet, src)
         else:
-            logger.warning('Customer ' + src + 'should NOT send ' + packet)
+            logger.warning(str(relation) + ' ' + str(src) + ' should NOT send ' + str(packet))
 
     def _handle_packet(self, packet, src):
         remove, update = self._remove(src, packet.content.remove)

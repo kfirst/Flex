@@ -4,9 +4,10 @@
 		"core": {
 			#core模块启动后需要载入的模块列表
 			"module": [
-				"flex.forwarding",
 				"flex.network",
-				"flex.topology"
+				"flex.forwarding",
+				"flex.topology",
+				"flex.control_packet_forwarding"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
@@ -28,9 +29,11 @@
 			"pox_command_line": "",
 			"pox_path": "../../../POX"
 		},
-		"selector": {
-			"algorithm": "sample",
-			"parameter": [1]
+		"control_packet_forwarding": {
+			"algorithms": {
+				"shortest_path": [],
+				"sample": [1]
+			}
 		}
 	},
 	"topology": {

@@ -90,11 +90,36 @@ class TopologyHandler(ControlHandler):
         return TopologySwitchPacketContent(self._myself, added, removed)
 
 
+class ConnectionUpHandler(ControlHandler):
+
+    def __init__(self):
+        super(ConnectionUpHandler, self).__init__()
+
+    def _handle_ConnectionUp(self, event):
+        switch = Switch(self._switch_id(event.dpid))
+        content = ConnectionUpContent(switch)
+        self._create_and_send_packet(content)
+
+
+class ConnectionDownHandler(ControlHandler):
+
+    def __init__(self):
+        super(ConnectionDownHandler, self).__init__()
+
+    def _handle_ConnectionUp(self, event):
+        switch = Switch(self._switch_id(event.dpid))
+        content = ConnectionDownHandler(switch)
+        self._create_and_send_packet(content)
+
+
 class PacketInHandler(ControlHandler):
+
+    def __init__(self):
+        super(PacketInHandler, self).__init__()
 
     def _handle_PacketIn(self, event):
         switch = Switch(self._switch_id(event.dpid))
         port = event.port
         data = event.data
-        content = PacketInContent(switch, None, port, data)
+        content = PacketInContent(switch, port, data)
         self._create_and_send_packet(content)

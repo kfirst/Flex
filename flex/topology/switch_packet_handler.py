@@ -53,17 +53,16 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
             if controller == self._myself:
                 relation = self.CUSTOMER
             else:
-                logger.warning('There is no neighbor ' + controller)
+                logger.warning('There is no neighbor ' + str(controller))
                 return
         if relation == self.PEER or relation == self.CUSTOMER:
             self._handle_packet(packet, controller)
         else:
-            logger.warning('Provider ' + controller + 'should NOT send ' + packet)
+            logger.warning(str(relation) + ' ' + str(controller) + ' should NOT send ' + str(packet))
 
     def _handle_packet(self, packet, src):
         remove, update = self._remove(src, packet.content.remove)
         update += self._update(src, packet.content.update)
-        # network send packet
         if update or remove:
             content = TopologySwitchPacketContent(self._myself, update, remove)
             packet = Packet(Packet.TOPO_SWITCH, content)

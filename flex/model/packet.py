@@ -139,6 +139,8 @@ class RegisterConcersContent(object):
 class ControlPacketContent(object):
 
     PACKET_IN = 'PacketIn'
+    CONNECTION_UP = 'ConnectionUp'
+    CONNECTION_DOWN = 'ConnectionDown'
 
     def __init__(self, content_type, src, dst):
         self.type = content_type
@@ -151,8 +153,8 @@ class ControlPacketContent(object):
 
 class PoxPacketContent(ControlPacketContent):
 
-    def __init__(self, content_type, src, dst):
-        super(PoxPacketContent, self).__init__(content_type, src, dst)
+    def __init__(self, content_type, src):
+        super(PoxPacketContent, self).__init__(content_type, src, None)
 
     def __str__(self):
         return object_to_string(self,
@@ -160,11 +162,25 @@ class PoxPacketContent(ControlPacketContent):
                     src = self.switch)
 
 
+class ConnectionUpContent(PoxPacketContent):
+
+    def __init__(self, switch):
+        super(ConnectionUpContent, self).__init__(
+                ControlPacketContent.CONNECTION_UP, switch)
+
+
+class ConnectionDownContent(PoxPacketContent):
+
+    def __init__(self, switch):
+        super(ConnectionUpContent, self).__init__(
+                ControlPacketContent.CONNECTION_DOWN, switch)
+
+
 class PacketInContent(PoxPacketContent):
 
-    def __init__(self, switch, controller, port, data):
+    def __init__(self, switch, port, data):
         super(PacketInContent, self).__init__(
-                ControlPacketContent.PACKET_IN, switch, controller)
+                ControlPacketContent.PACKET_IN, switch)
         self.port = port
         self.data = data
 
