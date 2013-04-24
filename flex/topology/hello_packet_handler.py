@@ -6,14 +6,14 @@ Created on 2013-3-30
 '''
 
 from flex.core import core
-from flex.base.handler import PacketHandler
+from flex.base.handler import PacketHandler, EventHandler
 from flex.base.event import NeighborControllerUpEvent
 from flex.model.packet import HelloPacketContent, Packet
 from flex.topology.topology import Topology
 
 logger = core.get_logger()
 
-class HelloPacketHandler(PacketHandler):
+class HelloPacketHandler(PacketHandler, EventHandler):
     '''
     维护邻居信息的工作原理是：
     当Controller1的topology模块启动起来后，将向其所有的邻居发送Hello报文；
@@ -33,6 +33,8 @@ class HelloPacketHandler(PacketHandler):
         self._neighbors_with_relation = neighbors_with_relation
         hello_packet_content = HelloPacketContent(self._myself)
         self._packet = Packet(Packet.HELLO, hello_packet_content)
+
+    def handle_event(self, event):
         # send hello packet
         hello_packet = self._make_hello_packet()
         for neighbor in self._relation_of_neighbor:

@@ -6,6 +6,7 @@ Created on 2013-3-19
 '''
 
 from flex.base.module import Module
+from flex.base.event import FlexUpEvent
 
 class Core(Module):
 
@@ -41,6 +42,7 @@ class Core(Module):
             self._logger.debug('Start ' + name)
             self._components[name].start()
         self._logger.info('Flex is up')
+        self.event.happen(FlexUpEvent())
 
     def terminate(self):
         self._logger.info('Terminating')

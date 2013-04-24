@@ -12,16 +12,17 @@ logger = core.get_logger()
 
 class ConcernHandler(PacketHandler):
 
+    _handler_name = {
+        Control.PACKET_IN: PacketInHandler,
+        Control.CONNECTION_UP: ConnectionUpHandler,
+        Control.CONNECTION_DOWN: ConnectionDownHandler
+    }
+
     def __init__(self):
         self._handlers = {}
-        self._handlers_name = {
-            Control.PACKET_IN: PacketInHandler,
-            Control.CONNECTION_UP: ConnectionUpHandler,
-            Control.CONNECTION_DOWN: ConnectionDownHandler
-        }
         core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 
-    def handle(self, packet):
+    def handle_packet(self, packet):
         types = packet.content.types
         for control_type in types:
             switches = types[control_type]
@@ -29,7 +30,7 @@ class ConcernHandler(PacketHandler):
                 handler = self._handlers[control_type]
             except KeyError:
                 try:
-                    handler = self._handlers_name[control_type]()
+                    handler = self._handler_name[control_type]()
                     self._handlers[control_type] = handler
                 except KeyError:
                     logger.error('Handler handled [' + control_type + '] is not found in ' + str(packet))
@@ -40,13 +41,24 @@ class ConcernHandler(PacketHandler):
 
 class LocalHandler(PacketHandler):
 
+    _handler_name = {
+            Control.PACKET_OUT: PacketOutHandler,
+            Control.FLOW_MOD: FLowModHandler
+    }
+
     def __init__(self):
+        self._handlers = {}
         core.forwarding.register_handler(Packet.LOCAL_TO_POX, self)
 
-    def handle(self, packet):
+
+    def handle_packet(self, packet):
         control_type = packet.content.type
         try:
-            func = getattr(self, control_type)
-        except AttributeError:
-            logger.error('No handler for type [' + control_type + '] in ' + str(packet))
-        func(packet.content)
+            handler = self._handlers[control_type]
+        except KeyError:
+            try:
+                handler = self._handler_name[control_type]()
+                self._handlers[control_type] = handler
+            except KeyError:
+                logger.error('Handler handled [' + control_type + '] is not found in ' + str(packet))
+        handler.handle(packet.content)

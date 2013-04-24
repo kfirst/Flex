@@ -42,10 +42,10 @@ class ControllerUpHandler(EventHandler):
     def __init__(self, controller_concerns):
         self._controller_concerns = controller_concerns
 
-    def handle(self, event):
+    def handle_event(self, event):
         relation = event.relation
         if relation == Topology.PEER or relation == Topology.CUSTOMER:
-            for controller, types in self._controller_concerns:
+            for controller, types in self._controller_concerns.items():
                 if types:
                     content = RegisterConcersContent(controller, types)
                     packet = Packet(Packet.REGISTER_CONCERN, content)

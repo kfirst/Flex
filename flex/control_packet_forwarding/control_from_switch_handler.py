@@ -58,7 +58,7 @@ class ControlFromSwitchHandler(PacketHandler):
         ret = []
         shorest = None
         for controller in controllers:
-            distance = core.topology.distance()
+            distance = core.topology.distance(controller)
             if shorest == None or distance < shorest:
                 shorest = distance
                 ret = [controller]

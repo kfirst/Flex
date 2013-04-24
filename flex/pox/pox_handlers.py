@@ -8,6 +8,7 @@ from pox.core import core as pox_core
 from flex.core import core as flex_core
 from flex.model.packet import *
 from flex.model.device import Switch
+import pox.openflow.libopenflow_01 as of
 
 class ConnectionPool(object):
 
@@ -39,6 +40,9 @@ class ControlHandler(object):
 
     def _switch_id(self, dpid):
         return str(self._myself.get_id()) + '_' + str(dpid)
+
+    def _get_switch(self, switch):
+        return self._pool.get(switch.get_id())
 
     def add_switches(self, switches = []):
         added = []
@@ -121,5 +125,38 @@ class PacketInHandler(ControlHandler):
         switch = Switch(self._switch_id(event.dpid))
         port = event.port
         data = event.data
-        content = PacketInContent(switch, port, data)
+        buffer_id = event.ofp.buffer_id
+        content = PacketInContent(switch, port, data, buffer_id)
         self._create_and_send_packet(content)
+
+
+class PacketOutHandler(ControlHandler):
+
+    def __init__(self):
+        super(PacketOutHandler, self).__init__()
+
+    def handle(self, content):
+        msg = of.ofp_packet_out()
+        msg.buffer_id = content.buffer_id
+        msg.in_port = content.port
+        msg.actions = content.actions
+        msg.data = content.data
+        switch = self._get_switch(content.dst)
+        switch.send(msg)
+
+
+class FLowModHandler(ControlHandler):
+
+    def __init__(self):
+        super(FLowModHandler, self).__init__()
+
+    def handle(self, content):
+        msg = of.ofp_flow_mod()
+        msg.match = content.match
+        msg.idle_timeout = content.idle_timeout
+        msg.hard_timeout = content.hard_timeout
+        msg.buffer_id = content.buffer_id
+        msg.actions = content.actions
+        msg.data = content.data
+        switch = self._get_switch(content.dst)
+        switch.send(msg)

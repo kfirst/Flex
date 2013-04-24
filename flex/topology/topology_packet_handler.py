@@ -5,6 +5,7 @@ Created on 2013-4-21
 '''
 
 from flex.core import core
+import time
 
 logger = core.get_logger()
 
@@ -19,6 +20,7 @@ class TopologyPacketHandler(object):
         self._nexthops_of_device = {}
         # {controller: (controller, path)}
         self._nexthop_of_device = {}
+        self._connection_time = {}
 
     def _send_packet(self, packet, dst):
         core.forwarding.forward(packet, dst)
@@ -28,6 +30,9 @@ class TopologyPacketHandler(object):
 
     def distance_of_device(self, device):
         return len(self._nexthop_of_device[device][1])
+
+    def connecion_time_of_device(self, device):
+        return self._connection_time[device]
 
     def _remove(self, src, removed_devices):
         remove = []
@@ -44,6 +49,7 @@ class TopologyPacketHandler(object):
                             shortest = [nexthop, path]
                     if shortest == None:
                         del self._nexthop_of_device[removed_device]
+                        del self._connection_time[removed_device]
                         remove.append(removed_device)
                     else:
                         self._nexthop_of_device[removed_device] = shortest
@@ -79,5 +85,6 @@ class TopologyPacketHandler(object):
             except KeyError:
                 self._nexthops_of_device[updated_device] = {src: updated_path}
                 self._nexthop_of_device[updated_device] = [src, updated_path]
+                self._connection_time[updated_device] = time.time()
                 update.append((updated_device, updated_path))
         return update

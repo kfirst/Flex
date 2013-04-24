@@ -66,7 +66,7 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
         # network send packet
         if update or remove:
             content = TopologyControllerPacketContent(self._myself, update, remove)
-            packet = Packet(Packet.TOPO_SWITCH, content)
+            packet = Packet(Packet.TOPO_CONTROLLER, content)
             for customer in self._neighbors_with_relation[self.CUSTOMER]:
                 if customer != src:
                     self._send_packet(packet, customer)

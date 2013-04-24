@@ -12,6 +12,7 @@ from flex.base.exception import SwitchNotFoundException, \
 from flex.model.packet import Packet
 from flex.base import event
 from flex.model.device import Switch, Controller
+from flex.base.event import FlexUpEvent
 
 logger = core.get_logger()
 
@@ -45,6 +46,7 @@ class Topology(Module):
         self.controller = ControllerPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
 
         core.forwarding.register_handler(Packet.HELLO, self.hello)
+        core.event.register_handler(FlexUpEvent, self.hello)
         core.forwarding.register_handler(Packet.TOPO_SWITCH, self.switch)
         core.event.register_handler(event.NeighborControllerUpEvent, self.switch)
         core.forwarding.register_handler(Packet.TOPO_CONTROLLER, self.controller)
@@ -71,6 +73,18 @@ class Topology(Module):
         elif isinstance(device, Controller):
             try:
                 return self.controller.distance_of_device(device)
+            except KeyError:
+                raise ControllerNotFoundException(str(device) + ' is not found!')
+
+    def connection_time(self, device):
+        if isinstance(device, Switch):
+            try:
+                return self.switch.connecion_time_of_device(device)
+            except KeyError:
+                raise SwitchNotFoundException(str(device) + ' is not found!')
+        elif isinstance(device, Controller):
+            try:
+                return self.controller.connecion_time_of_device(device)
             except KeyError:
                 raise ControllerNotFoundException(str(device) + ' is not found!')
 

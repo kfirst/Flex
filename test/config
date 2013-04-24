@@ -7,7 +7,10 @@
 				"flex.network",
 				"flex.forwarding",
 				"flex.topology",
-				"flex.control_packet_forwarding"
+				"flex.control_packet_forwarding",
+				"flex.pox",
+				"flex.api",
+				"app.l2_learning"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息

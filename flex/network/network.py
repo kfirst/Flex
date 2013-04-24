@@ -86,7 +86,6 @@ class Network(Module):
                     self._connection_handlers[fd].handle(event)
                 except:
                     pass
-        self._epoll.close()
 
     def start(self):
         self._start_server()
@@ -104,13 +103,14 @@ class Network(Module):
         thread.start()
 
     def terminate(self):
+        self._run = False
         self._epoll.unregister(self._server.get_fileno())
         for address in self._connection_fds:
             fd = self._connection_fds[address]
             self._epoll.unregister(fd)
             self._connections[address].close()
         self._server.close()
-        self._run = False
+        self._epoll.close()
 
 
 class ServerHandler(ConnectionHandler):

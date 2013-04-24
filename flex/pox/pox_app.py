@@ -19,13 +19,13 @@ class PoxApp(Module):
     def start(self):
         launch_pox(self._config, self)
 
-        from flex.pox.pox_handlers import TopologyHandler
-        TopologyHandler().add_switches()
-
         from flex.pox.flex_handlers import ConcernHandler
         ConcernHandler()
         from flex.pox.flex_handlers import LocalHandler
         LocalHandler()
+
+        from flex.pox.pox_handlers import TopologyHandler
+        TopologyHandler().add_switches()
 
     def terminate(self):
         terminate_pox()

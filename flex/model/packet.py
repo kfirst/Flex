@@ -6,6 +6,7 @@
 '''
 
 from flex.lib.util import object_to_string
+import time
 
 class PacketTracker(object):
     '''
@@ -20,6 +21,7 @@ class PacketTracker(object):
     def track(self, src, dst):
         self._src = src.get_id()
         self._dst = dst.get_id()
+        self._time = time.time()
         if not self._path:
             self._path.append(self._src)
         elif self._path[-1] != self._src:
@@ -31,14 +33,12 @@ class PacketTracker(object):
     def src(self):
         return self._src
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     src = self._src,
                     dst = self._dst,
-                    path = self._path)
-
-    def __repr__(self):
-        return self.__str__()
+                    path = self._path,
+                    time = self._time)
 
 
 class Packet(object):
@@ -61,14 +61,11 @@ class Packet(object):
         self.type = packet_type
         self.content = content
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     type = self.type,
                     content = self.content,
                     tracker = self.tracker)
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class TopologySwitchPacketContent(object):
@@ -78,14 +75,11 @@ class TopologySwitchPacketContent(object):
         self.update = switches_update
         self.remove = switches_remove
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     controller = self.controller,
                     update = self.update,
                     remove = self.remove)
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class TopologyControllerPacketContent(object):
@@ -95,14 +89,11 @@ class TopologyControllerPacketContent(object):
         self.update = controllers_update
         self.remove = controllers_remove
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     controller = self.controller,
                     update = self.update,
                     remove = self.remove)
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class HelloPacketContent(object):
@@ -111,13 +102,10 @@ class HelloPacketContent(object):
         self.response = response
         self.controller = controller
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     response = self.response,
                     controller = self.controller)
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class RegisterConcersContent(object):
@@ -129,11 +117,10 @@ class RegisterConcersContent(object):
         # {type: [Switch] or ALL_SWITCHES for all switches}
         self.types = concern_types
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     controller = self.controller,
-                    type = self.type,
-                    switches = self.switches)
+                    types = self.types)
 
 
 class ControlPacketContent(object):
@@ -141,14 +128,13 @@ class ControlPacketContent(object):
     PACKET_IN = 'PacketIn'
     CONNECTION_UP = 'ConnectionUp'
     CONNECTION_DOWN = 'ConnectionDown'
+    PACKET_OUT = 'PacketOut'
+    FLOW_MOD = 'FlowMod'
 
     def __init__(self, content_type, src, dst):
         self.type = content_type
         self.src = src
         self.dst = dst
-
-    def __repr__(self):
-        return self.__str__()
 
 
 class PoxPacketContent(ControlPacketContent):
@@ -156,10 +142,11 @@ class PoxPacketContent(ControlPacketContent):
     def __init__(self, content_type, src):
         super(PoxPacketContent, self).__init__(content_type, src, None)
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     type = self.type,
-                    src = self.switch)
+                    src = self.src,
+                    dst = self.dst)
 
 
 class ConnectionUpContent(PoxPacketContent):
@@ -178,19 +165,55 @@ class ConnectionDownContent(PoxPacketContent):
 
 class PacketInContent(PoxPacketContent):
 
-    def __init__(self, switch, port, data):
+    def __init__(self, switch, ofp):
         super(PacketInContent, self).__init__(
                 ControlPacketContent.PACKET_IN, switch)
-        self.port = port
-        self.data = data
+        self.ofp = ofp
+
+    @property
+    def port(self):
+        return self.ofp.in_port
+
+    @property
+    def data(self):
+        return self.ofp.data
+
+    @property
+    def buffer_id(self):
+        return self.ofp.buffer_id
 
 
 class ApiPacketContent(ControlPacketContent):
 
-    def __init__(self, content_type, src, dst):
-        super(ApiPacketContent, self).__init__(content_type, src, dst)
+    def __init__(self, content_type, dst):
+        super(ApiPacketContent, self).__init__(content_type, None, dst)
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self,
                     type = self.type,
-                    dst = self.switch)
+                    src = self.src,
+                    dst = self.dst)
+
+
+class PacketOutContent(ApiPacketContent):
+
+    def __init__(self, switch):
+        super(PacketOutContent, self).__init__(
+                ControlPacketContent.PACKET_OUT, switch)
+        self.port = None
+        self.buffer_id = None
+        self.data = b''
+        self.actions = []
+
+
+class FlowModContent(ApiPacketContent):
+
+    def __init__(self, switch):
+        super(FlowModContent, self).__init__(
+                ControlPacketContent.FLOW_MOD, switch)
+        self.idle_timeout = 0
+        self.hard_timeout = 0
+        self.match = None
+        self.buffer_id = None
+        self.actions = []
+        self.data = None

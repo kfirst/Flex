@@ -10,7 +10,7 @@ from flex.lib.util import object_to_string
 class BaseEvent(object):
 
     def __repr__(self):
-        return self.__str__()
+        return object_to_string(self)
 
 
 class NeighborControllerUpEvent(BaseEvent):
@@ -21,5 +21,13 @@ class NeighborControllerUpEvent(BaseEvent):
         self.controller = controller
         self.relation = relation
 
-    def __str__(self):
-        return object_to_string(self, controller=self.controller)
+    def __repr__(self):
+        return object_to_string(self, controller = self.controller)
+
+
+class FlexUpEvent(BaseEvent):
+    '''
+    Flex启动完毕事件
+    '''
+    def __init__(self):
+        pass

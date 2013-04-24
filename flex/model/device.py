@@ -15,11 +15,8 @@ class Device(object):
     def get_id(self):
         return self.__id
 
-    def __str__(self):
-        return object_to_string(self, self.__id)
-
     def __repr__(self):
-        return self.__str__()
+        return object_to_string(self, self.__id)
 
     def __hash__(self):
         return hash(self.__id)
@@ -39,7 +36,7 @@ class Controller(Device):
     def get_address(self):
         return self.__address
 
-    def __str__(self):
+    def __repr__(self):
         return object_to_string(self, self.get_id(), self.__address)
 
 
@@ -55,4 +52,4 @@ if __name__ == '__main__':
     s = {}
     s[controller1] = 1
     s[controller2] = 2
-    print controller1 in s
+    print s
