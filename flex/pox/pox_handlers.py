@@ -112,7 +112,7 @@ class ConnectionDownHandler(ControlHandler):
 
     def _handle_ConnectionUp(self, event):
         switch = Switch(self._switch_id(event.dpid))
-        content = ConnectionDownHandler(switch)
+        content = ConnectionDownContent(switch)
         self._create_and_send_packet(content)
 
 

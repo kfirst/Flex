@@ -14,7 +14,8 @@ class ControlFromApiHandler(PacketHandler):
     def __init__(self, self_controller):
         self._myself = self_controller
 
-    def handle(self, packet):
+    def handle_packet(self, packet):
+        logger.info('Control from api packet received')
         nexthop = core.topology.nexthop(packet.content.dst)
         if nexthop == self._myself:
             packet.type = Packet.LOCAL_TO_POX

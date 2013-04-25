@@ -44,7 +44,7 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
                 self._send_packet(packet, dst)
 
     def handle_packet(self, packet):
-        logger.debug('Topo packet received')
+        logger.info('Switch Topo packet received')
 
         controller = packet.content.controller
         try:

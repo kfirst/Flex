@@ -20,7 +20,7 @@ class RegisterConcernsHandler(PacketHandler):
         self._controller_concerns = controller_concerns
 
     def handle_packet(self, packet):
-        logger.debug('Register Concerns packet received')
+        logger.info('Register Concerns packet received')
         controller = packet.content.controller
         concern_types = packet.content.types
         new_concern_types = {}

@@ -95,7 +95,7 @@ class LearningSwitch (object):
         # log.debug("Initializing LearningSwitch, transparent=%s",
         #          str(self.transparent))
 
-    def _handle_PacketIn (self, event):
+    def _handle_PacketIn(self, event):
         """
         Handle packet in messages from the switch to implement above algorithm.
         """

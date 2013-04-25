@@ -23,6 +23,7 @@ class ConcernHandler(PacketHandler):
         core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 
     def handle_packet(self, packet):
+        logger.info('Local Concerns packet received')
         types = packet.content.types
         for control_type in types:
             switches = types[control_type]
@@ -53,6 +54,7 @@ class LocalHandler(PacketHandler):
 
     def handle_packet(self, packet):
         control_type = packet.content.type
+        logger.info('Local to pox [' + control_type + '] packet received')
         try:
             handler = self._handlers[control_type]
         except KeyError:
