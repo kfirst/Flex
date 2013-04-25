@@ -6,7 +6,7 @@ Created on 2013-4-6
 
 from flex.base.module import Module
 from flex.core import core as flex_core
-from flex.model.packet import Packet
+import time
 
 logger = flex_core.get_logger()
 
@@ -18,6 +18,7 @@ class PoxApp(Module):
 
     def start(self):
         launch_pox(self._config, self)
+        time.sleep(1)
 
         from flex.pox.flex_handlers import ConcernHandler
         ConcernHandler()

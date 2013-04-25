@@ -12,20 +12,20 @@ class Connection(object):
     SERVER = 0
     CLIENT = 1
 
-    @staticmethod
-    def get_client(address):
+    @classmethod
+    def get_client(cls, address):
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
             client.connect(address)
             client.setblocking(False)
-            return Connection(client, address, Connection.CLIENT)
+            return cls(client, address, Connection.CLIENT)
         except Exception, e:
             raise ConnectFailException('Can not connect to ' + str(address) + ', because of ' + str(e))
 
-    @staticmethod
-    def get_server(address, backlog):
+    @classmethod
+    def get_server(cls, address, backlog):
         try:
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
@@ -33,7 +33,7 @@ class Connection(object):
             server.bind(address)
             server.listen(backlog)
             server.setblocking(False)
-            return Connection(server, address, Connection.SERVER)
+            return cls(server, address, Connection.SERVER)
         except Exception, e:
             raise ConnectFailException('Can not start server at ' + str(address) + ', because of ' + str(e))
 

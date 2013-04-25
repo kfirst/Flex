@@ -61,7 +61,11 @@ class Network(Module):
         self._connections[address] = connection
         self._connection_fds[address] = fd
         self._connection_handlers[fd] = ClientHandler(connection, self)
-        self._epoll.register(fd, select.EPOLLIN | select.EPOLLOUT)
+        self._epoll.register(fd, select.EPOLLIN)
+
+    def _modify_mask(self, connection, mask):
+        fd = connection.get_fileno()
+        self._epoll.modify(fd, mask)
 
     def _remove_connection(self, connection):
         address = connection.get_address()
@@ -95,7 +99,7 @@ class Network(Module):
         self._server = Connection.get_server(self._address, self._backlog)
         fd = self._server.get_fileno()
         self._connection_handlers[fd] = ServerHandler(self._server, self)
-        self._epoll.register(fd, select.EPOLLIN | select.EPOLLOUT)
+        self._epoll.register(fd, select.EPOLLIN)
 
     def _start_thread(self):
         thread = threading.Thread(target = self._schedule)
@@ -139,15 +143,18 @@ class ClientHandler(ConnectionHandler):
             self._network._remove_connection(self._connection)
         elif event & select.EPOLLIN:
             data = self._connection.recv()
-            self._receive_buffer += data
-            try:
-                while(True):
-                    index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
-                    data = self._decode_data(self._receive_buffer[0:index])
-                    self._network._handle_data(data)
-                    self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
-            except ValueError:
-                pass
+            if data:
+                self._receive_buffer += data
+                try:
+                    while(True):
+                        index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
+                        data = self._decode_data(self._receive_buffer[0:index])
+                        self._network._handle_data(data)
+                        self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
+                except ValueError:
+                    pass
+            else:
+                self._network._remove_connection(self._connection)
         elif event & select.EPOLLOUT:
             if self._send_buffer:
                 writen = self._connection.send(self._send_buffer[0])
@@ -155,9 +162,12 @@ class ClientHandler(ConnectionHandler):
                     del self._send_buffer[0]
                 else:
                     self._send_buffer[0] = self._send_buffer[0][writen:]
+            else:
+                self._network._modify_mask(self._connection, select.EPOLLIN)
 
     def send(self, data):
         self._send_buffer.append(self._encode_data(data) + self.EOL)
+        self._network._modify_mask(self._connection, select.EPOLLIN | select.EPOLLOUT)
 
     def _encode_data(self, data):
         return base64.b64encode(data)

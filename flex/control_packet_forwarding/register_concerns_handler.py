@@ -53,12 +53,12 @@ class RegisterConcernsHandler(PacketHandler):
     def _send_to_neighbor(self, packet):
         topo = core.topology
         forwarding = core.forwarding
-        peers = topo.get_peers()
-        for peer in peers:
-            forwarding.forward(packet, peer)
         customers = topo.get_customers()
         for customer in customers:
             forwarding.forward(packet, customer)
+        peers = topo.get_peers()
+        for peer in peers:
+            forwarding.forward(packet, peer)
 
     def _send_to_local(self, packet):
         packet.type = Packet.LOCAL_CONCERN
