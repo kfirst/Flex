@@ -149,8 +149,8 @@ class ClientHandler(ConnectionHandler):
                     while(True):
                         index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
                         data = self._decode_data(self._receive_buffer[0:index])
-                        self._network._handle_data(data)
                         self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
+                        self._network._handle_data(data)
                 except ValueError:
                     pass
             else:

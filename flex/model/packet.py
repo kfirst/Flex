@@ -6,22 +6,26 @@
 '''
 
 from flex.lib.util import object_to_string
-import time
+import random
 
 class PacketTracker(object):
     '''
     报文追踪器，记录报文经过的路径，主要用于Debug
     '''
 
+    _count = 0
+
     def __init__(self):
         self._src = None
+        self._ori = None
         self._dst = None
         self._path = []
 
     def track(self, src, dst):
         self._src = src.get_id()
         self._dst = dst.get_id()
-        self._time = time.time()
+        self._num = PacketTracker._count
+        PacketTracker._count += 1
         if not self._path:
             self._path.append(self._src)
         elif self._path[-1] != self._src:
@@ -38,7 +42,7 @@ class PacketTracker(object):
                     src = self._src,
                     dst = self._dst,
                     path = self._path,
-                    time = self._time)
+                    serial = self._src + '.' + str(self._num))
 
 
 class Packet(object):

@@ -22,7 +22,9 @@ class NeighborControllerUpEvent(BaseEvent):
         self.relation = relation
 
     def __repr__(self):
-        return object_to_string(self, controller = self.controller)
+        return object_to_string(self,
+                controller = self.controller,
+                relation = self.relation)
 
 
 class FlexUpEvent(BaseEvent):

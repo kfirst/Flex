@@ -144,6 +144,7 @@ class LearningSwitch (object):
                 msg.port = event.port
                 self.connection.send(msg)
 
+        print packet
         self.macToPort[packet.src] = event.port  # 1
 
         if not self.transparent:  # 2

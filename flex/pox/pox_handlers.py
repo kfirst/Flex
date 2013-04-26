@@ -53,6 +53,7 @@ class ControlHandler(object):
             for switch in self._switches:
                 self._pool.get(switch.get_id()).removeListeners(self._switches[switch])
             self._switches = self.ALL_SWITCHES
+            added = self.ALL_SWITCHES
         else:
             for switch in switches:
                 if switch not in self._switches:
@@ -123,10 +124,10 @@ class PacketInHandler(ControlHandler):
 
     def _handle_PacketIn(self, event):
         switch = Switch(self._switch_id(event.dpid))
-        port = event.port
-        data = event.data
-        buffer_id = event.ofp.buffer_id
-        content = PacketInContent(switch, port, data, buffer_id)
+#        port = event.port
+#        data = event.data
+#        buffer_id = event.ofp.buffer_id
+        content = PacketInContent(switch, event.ofp)
         self._create_and_send_packet(content)
 
 

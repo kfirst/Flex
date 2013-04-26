@@ -46,8 +46,8 @@ class Forwarding(Module):
         if not controller or controller.get_address() == self._myself.get_address():
             return self._dispatch(packet)
         else:
-            logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
             data = self._transformer.packet_to_data(packet)
+            logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
             return core.network.send(controller.get_address(), data)
 
     def _dispatch(self, packet):

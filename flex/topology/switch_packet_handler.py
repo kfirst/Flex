@@ -28,8 +28,10 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
     PEER = Topology.PEER
     CUSTOMER = Topology.CUSTOMER
 
-    def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
-        super(SwitchPacketHandler, self).__init__(myself, relation_of_neighbor, neighbors_with_relation)
+    def __init__(self, myself, hello):
+        super(SwitchPacketHandler, self).__init__(myself)
+        self._hello = hello
+        self._myself = myself
 
     def handle_event(self, event):
         relation = event.relation
@@ -48,7 +50,7 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
 
         controller = packet.content.controller
         try:
-            relation = self._relation_of_neighbor[controller]
+            relation = self._hello.get_neighbor_relation(controller)
         except KeyError:
             if controller == self._myself:
                 relation = self.CUSTOMER
@@ -66,9 +68,9 @@ class SwitchPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler):
         if update or remove:
             content = TopologySwitchPacketContent(self._myself, update, remove)
             packet = Packet(Packet.TOPO_SWITCH, content)
-            for c in self._neighbors_with_relation[self.PROVIDER]:
+            for c in self._hello.get_providers():
                 if c != src:
                     self._send_packet(packet, c)
-            for c in self._neighbors_with_relation[self.PEER]:
+            for c in self._hello.get_peers():
                 if c != src:
                     self._send_packet(packet, c)

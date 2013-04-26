@@ -41,9 +41,9 @@ class Topology(Module):
         from flex.topology.hello_packet_handler import HelloPacketHandler
         self.hello = HelloPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
         from flex.topology.switch_packet_handler import SwitchPacketHandler
-        self.switch = SwitchPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
+        self.switch = SwitchPacketHandler(self._myself, self.hello)
         from flex.topology.controller_packet_handler import ControllerPacketHandler
-        self.controller = ControllerPacketHandler(self._myself, self._relation_of_neighbor, self._neighbors_with_relation)
+        self.controller = ControllerPacketHandler(self._myself, self.hello)
 
         core.forwarding.register_handler(Packet.HELLO, self.hello)
         core.event.register_handler(FlexUpEvent, self.hello)

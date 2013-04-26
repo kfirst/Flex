@@ -43,18 +43,23 @@ class Api(Module, PacketHandler):
         content = packet.content
         switch = content.src
         control_type = content.type
-        logger.info('Local to api [' + control_type + '] packet received')
+        logger.info('Local To Api [' + control_type + '] packet received')
         flag = False
         try:
-            handler = self._handlers[control_type][switch]
-            message = self._message[control_type]
-            handler(message(self, content))
+            message = self._message[control_type](self, content)
+        except KeyError:
+            logger.warning('No message for ' + str(packet))
+            return
+        try:
+            handlers = self._handlers[control_type][switch]
+            for handler in handlers:
+                handler(message)
         except KeyError:
             flag = True
         try:
-            handler = self._handlers[control_type][self.ALL_SWITCHES]
-            message = self._message[control_type]
-            handler(message(self, content))
+            handlers = self._handlers[control_type][self.ALL_SWITCHES]
+            for handler in handlers:
+                handler(message)
         except KeyError:
             if flag:
                 logger.warning('No handler for ' + str(packet))
@@ -69,7 +74,6 @@ class Api(Module, PacketHandler):
     def _add_hanlders(self, app, switches = RegisterConcersContent.ALL_SWITCHES):
         concern_types = {}
         for method_name in dir(app):
-            print method_name
             method = getattr(app, method_name)
             if callable(method) and method_name.startswith("_handle_"):
                 control_type = method_name[8:]

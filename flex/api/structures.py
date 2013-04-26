@@ -7,30 +7,37 @@ Created on 2013-4-22
 from flex.core import core
 from flex.model.packet import Packet
 import pox.openflow.libopenflow_01 as of
+from flex.lib.util import object_to_string
 
 logger = core.get_logger()
 
 class BaseSwitch(object):
 
-    def __init__(self, api):
+    def __init__(self, api, switch):
         self._api = api
+        self._switch = switch
 
-    def add_listeners(self, obj):
-        self._api._add_hanlders(obj, self._switch)
+    def __repr__(self):
+        return object_to_string(self,
+                switch = self._switch)
 
 
 class AllSwitches(BaseSwitch):
 
     def __init__(self, api):
-        super(AllSwitches, self).__init__(api)
-        self._switch = self._api.ALL_SWITCHES
+        super(AllSwitches, self).__init__(api, api.ALL_SWITCHES)
+
+    def add_listeners(self, obj):
+        self._api._add_hanlders(obj, self._switch)
 
 
 class Switch(BaseSwitch):
 
     def __init__(self, api, switch):
-        super(Switch, self).__init__(api)
-        self._switch = switch
+        super(Switch, self).__init__(api, switch)
+
+    def add_listeners(self, obj):
+        self._api._add_hanlders(obj, set([self._switch]))
 
     @property
     def connection_time(self):

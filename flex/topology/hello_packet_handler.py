@@ -27,9 +27,13 @@ class HelloPacketHandler(PacketHandler, EventHandler):
     PEER = Topology.PEER
     CUSTOMER = Topology.CUSTOMER
 
+    UP = True
+    DOWN = False
+
     def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
         self._myself = myself
         self._relation_of_neighbor = relation_of_neighbor
+        self._neighbor_status = {}
         self._neighbors_with_relation = neighbors_with_relation
         hello_packet_content = HelloPacketContent(self._myself)
         self._packet = Packet(Packet.HELLO, hello_packet_content)
@@ -44,16 +48,26 @@ class HelloPacketHandler(PacketHandler, EventHandler):
         return self._relation_of_neighbor[controller]
 
     def get_neighbors(self):
-        return set(self._relation_of_neighbor.keys())
+        return self._filter_neighbor(self._relation_of_neighbor.keys())
 
     def get_peers(self):
-        return set(self._neighbors_with_relation[self.PEER])
+        return self._filter_neighbor(self._neighbors_with_relation[self.PEER])
 
     def get_providers(self):
-        return set(self._neighbors_with_relation[self.PROVIDER])
+        return self._filter_neighbor(self._neighbors_with_relation[self.PROVIDER])
 
     def get_customers(self):
-        return set(self._neighbors_with_relation[self.CUSTOMER])
+        return self._filter_neighbor(self._neighbors_with_relation[self.CUSTOMER])
+
+    def _filter_neighbor(self, neighbors):
+        ret = set()
+        for controller in neighbors:
+            try:
+                if self._neighbor_status[controller] == self.UP:
+                    ret.add(controller)
+            except KeyError:
+                pass
+        return ret
 
     def handle_packet(self, packet):
         logger.debug('Hello packet received')
@@ -61,6 +75,7 @@ class HelloPacketHandler(PacketHandler, EventHandler):
         up_controller = packet.content.controller
         try:
             relation = self._relation_of_neighbor[up_controller]
+            self._neighbor_status[up_controller] = self.UP
         except KeyError:
             logger.warning('There is no neighbor ' + str(up_controller))
             return

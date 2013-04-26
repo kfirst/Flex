@@ -26,7 +26,7 @@ class ControlFromSwitchHandler(PacketHandler):
                 logger.warning('Algorithm ' + algorithm + ' is not found!')
 
     def handle_packet(self, packet):
-        logger.info('Control from switch packet received')
+        logger.info('Control From Switch packet received')
         control_type = packet.content.type
         switch = packet.content.src
         controller = packet.content.dst

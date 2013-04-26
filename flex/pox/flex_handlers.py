@@ -37,7 +37,7 @@ class ConcernHandler(PacketHandler):
                     logger.error('Handler handled [' + control_type + '] is not found in ' + str(packet))
                     continue
             added = handler.add_switches(switches)
-            logger.debug('Add handler handled [' + control_type + '] for ' + added + ' in ' + switches)
+            logger.debug('Add handler handled [' + control_type + '] for ' + str(added) + ' in ' + str(switches))
 
 
 class LocalHandler(PacketHandler):

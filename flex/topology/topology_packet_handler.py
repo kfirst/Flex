@@ -11,11 +11,8 @@ logger = core.get_logger()
 
 class TopologyPacketHandler(object):
 
-    def __init__(self, myself, relation_of_neighbor, neighbors_with_relation):
-        self._myself = myself
+    def __init__(self, myself):
         self._my_id = myself.get_id();
-        self._relation_of_neighbor = relation_of_neighbor
-        self._neighbors_with_relation = neighbors_with_relation
         # {controller: {controller: path}}
         self._nexthops_of_device = {}
         # {controller: (controller, path)}

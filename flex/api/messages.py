@@ -10,7 +10,7 @@ from flex.model.packet import PacketOutContent, FlowModContent
 class BaseMessage(object):
 
     def __init__(self):
-        from flex.api.structures import Switch
+        pass
 
     def __str__(self):
         return object_to_string(self)
@@ -23,6 +23,7 @@ class ConnectionUpMessage(BaseMessage):
 
     def __init__(self, api, content):
         super(ConnectionUpMessage, self).__init__()
+        from flex.api.structures import Switch
         self.switch = Switch(api, content.src)
 
     def __str__(self):
@@ -34,6 +35,7 @@ class ConnectionDownMessage(BaseMessage):
 
     def __init__(self, api, content):
         super(ConnectionDownMessage, self).__init__()
+        from flex.api.structures import Switch
         self.switch = Switch(api, content.src)
 
     def __str__(self):
@@ -45,6 +47,7 @@ class PacketInMessage(BaseMessage):
 
     def __init__(self, api, content):
         super(PacketInMessage, self).__init__()
+        from flex.api.structures import Switch
         self.switch = Switch(api, content.src)
         self.port = content.port
         self.data = content.data
