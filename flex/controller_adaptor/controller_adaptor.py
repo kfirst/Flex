@@ -18,7 +18,6 @@ class ControllerAdaptor(Module, PacketHandler):
     ALL_SWITCHES = RegisterConcersContent.ALL_SWITCHES
 
     def __init__(self, app_name, algorithms):
-        core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
         self.app = getattr(core, app_name)
         self.controllers = {}
         self._algorithms = []
@@ -28,9 +27,27 @@ class ControllerAdaptor(Module, PacketHandler):
                 self._algorithms.append((getattr(self, algorithm), parameters))
             except AttributeError:
                 logger.warning('Algorithm ' + algorithm + ' is not found!')
+        core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 
     def handle_packet(self, packet):
-        pass
+        controller = packet.content.controller
+        concern_types = packet.content.types
+        for concern_type, switches in concern_types.items():
+            try:
+                switch_controllers = self.controllers[concern_type]
+                if switches == self.ALL_SWITCHES:
+                    try:
+                        switch_controllers[switches].add(controller)
+                    except KeyError:
+                        switch_controllers[switches] = set([controller])
+                else:
+                    for switch in switches:
+                        try:
+                            switch_controllers[switch].add(controller)
+                        except KeyError:
+                            switch_controllers[switch] = set([controller])
+            except KeyError:
+                self.controllers[concern_type] = {switches: set([controller])}
 
     def forward(self, packet):
         switch = packet.src
