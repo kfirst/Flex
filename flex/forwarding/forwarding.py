@@ -37,18 +37,22 @@ class Forwarding(Module):
         '''
         self._dispatcher.register_handler(packet_type, packet_handler)
 
-    def forward(self, packet, controller = None):
+    def forward(self, packet):
         '''
-        若指定Controller，则向指定的Controller发送Packet，指定的Controller只能是邻居。
+        若指定Controller，则向指定的Controller发送Packet。
         若不指定Controlller，则自己Controller内部关心该类型报文的模块将接收到该报文
         '''
-        self._track(packet, controller)
-        if not controller or controller.get_address() == self._myself.get_address():
+        dst = packet.dst
+        if not dst:
             return self._dispatch(packet)
         else:
-            data = self._transformer.packet_to_data(packet)
-            logger.debug('Sending Packet to ' + str(controller) + ', ' + str(packet))
-            return core.network.send(controller.get_address(), data)
+            address = core.routing.get_address(dst)
+            if address:
+                logger.debug('Sending Packet to %s, %s' % (dst, packet))
+                data = self._transformer.packet_to_data(packet)
+                return core.network.send(address, data)
+            else:
+                logger.warning('Can not find address for %s' % (dst))
 
     def _dispatch(self, packet):
         '''
@@ -56,8 +60,3 @@ class Forwarding(Module):
         该方法会直接调用关心该类型报文的Handler，而无需经过内核转发
         '''
         self._dispatcher._handle(packet)
-
-    def _track(self, packet, controller):
-        if not controller:
-            controller = self._myself
-        packet.tracker.track(self._myself, controller)

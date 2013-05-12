@@ -109,8 +109,7 @@ class LearningSwitch (object):
                 if self.hold_down_expired is False:
                     # Oh yes it is!
                     self.hold_down_expired = True
-                    logger.info("%s: Flood hold-down expired -- flooding",
-                             event.switch)
+                    # logger.info("%s: Flood hold-down expired -- flooding", str(event.switch))
 
                 if message is not None: logger.debug(message)
                 # log.debug("%i: flood %s -> %s", event.dpid,packet.src,packet.dst)
@@ -119,7 +118,7 @@ class LearningSwitch (object):
                 msg.actions.append(structures.OutputAction(port = structures.Port.flood()))
             else:
                 pass
-            # log.info("Holding down flood for %s", dpid_to_str(event.dpid))
+            logger.info("Holding down flood for %s", str(event.switch))
             msg.data = event.ofp
             msg.port = event.port
             self.connection.send(msg)
@@ -144,7 +143,6 @@ class LearningSwitch (object):
                 msg.port = event.port
                 self.connection.send(msg)
 
-        print packet
         self.macToPort[packet.src] = event.port  # 1
 
         if not self.transparent:  # 2

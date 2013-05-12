@@ -9,6 +9,7 @@ from flex.core import core
 from flex.model.packet import *
 from flex.api.messages import *
 from flex.base.handler import PacketHandler
+from flex.routing.routing import Routing
 
 logger = core.get_logger()
 
@@ -33,11 +34,8 @@ class Api(Module, PacketHandler):
         self._handlers = {}
 
     def start(self):
-        controllers_update = [(self._myself, set())]
-        content = TopologyControllerPacketContent(self._myself, controllers_update, [])
-        packet = Packet(Packet.TOPO_CONTROLLER, content)
-        core.forwarding.forward(packet)
-        core.forwarding.register_handler(Packet.LOCAL_TO_API, self)
+        core.globalStorage.set(self._myself.get_id(), self._myself.get_address(), Routing.ROUTING)
+        core.forwarding.register_handler(Packet.CONTROL_FROM_SWITCH, self)
 
     def handle_packet(self, packet):
         content = packet.content

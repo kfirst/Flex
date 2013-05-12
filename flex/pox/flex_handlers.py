@@ -49,7 +49,7 @@ class LocalHandler(PacketHandler):
 
     def __init__(self):
         self._handlers = {}
-        core.forwarding.register_handler(Packet.LOCAL_TO_POX, self)
+        core.forwarding.register_handler(Packet.CONTROL_FROM_API, self)
 
 
     def handle_packet(self, packet):

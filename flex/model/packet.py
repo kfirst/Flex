@@ -6,110 +6,26 @@
 '''
 
 from flex.lib.util import object_to_string
-import random
-
-class PacketTracker(object):
-    '''
-    报文追踪器，记录报文经过的路径，主要用于Debug
-    '''
-
-    _count = 0
-
-    def __init__(self):
-        self._src = None
-        self._ori = None
-        self._dst = None
-        self._path = []
-
-    def track(self, src, dst):
-        self._src = src.get_id()
-        self._dst = dst.get_id()
-        self._num = PacketTracker._count
-        PacketTracker._count += 1
-        if not self._path:
-            self._path.append(self._src)
-        elif self._path[-1] != self._src:
-            self._path.append(self._src)
-            if len(self._path) > 5:
-                self._path.pop(0)
-
-    @property
-    def src(self):
-        return self._src
-
-    def __repr__(self):
-        return object_to_string(self,
-                    src = self._src,
-                    dst = self._dst,
-                    path = self._path,
-                    serial = self._src + '.' + str(self._num))
-
-
-class Packet(object):
-    '''
-    报文，该类中的常量表示报文的类型
-    '''
-
-    TOPO_SWITCH = 'topo_switch'
-    TOPO_CONTROLLER = 'topo_controller'
-    HELLO = 'hello'
-    CONTROL_FROM_SWITCH = 'control_from_switch'
-    LOCAL_TO_API = 'local_to_api'
-    CONTROL_FROM_API = 'control_from_api'
-    LOCAL_TO_POX = 'local_to_pox'
-    REGISTER_CONCERN = 'register_concern'
-    LOCAL_CONCERN = 'local_concern'
-
-    def __init__(self, packet_type, content):
-        self.tracker = PacketTracker()
-        self.type = packet_type
-        self.content = content
-
-    def __repr__(self):
-        return object_to_string(self,
-                    type = self.type,
-                    content = self.content,
-                    tracker = self.tracker)
-
-
-class TopologySwitchPacketContent(object):
-
-    def __init__(self, controller, switches_update, switches_remove):
-        self.controller = controller
-        self.update = switches_update
-        self.remove = switches_remove
-
-    def __repr__(self):
-        return object_to_string(self,
-                    controller = self.controller,
-                    update = self.update,
-                    remove = self.remove)
-
-
-class TopologyControllerPacketContent(object):
-
-    def __init__(self, controller, controllers_update, controllers_remove):
-        self.controller = controller
-        self.update = controllers_update
-        self.remove = controllers_remove
-
-    def __repr__(self):
-        return object_to_string(self,
-                    controller = self.controller,
-                    update = self.update,
-                    remove = self.remove)
+from flex.model.device import Controller, Switch, Device
 
 
 class HelloPacketContent(object):
 
     def __init__(self, controller, response = False):
-        self.response = response
         self.controller = controller
+        self.response = response
+
+    def serialize(self):
+        return (self.controller.serialize(), self.response)
+
+    @classmethod
+    def deserialize(cls, data):
+        return cls(Controller.deserialize(data[0]), data[1])
 
     def __repr__(self):
         return object_to_string(self,
-                    response = self.response,
-                    controller = self.controller)
+                    controller = self.controller,
+                    response = self.response)
 
 
 class RegisterConcersContent(object):
@@ -121,10 +37,112 @@ class RegisterConcersContent(object):
         # {type: [Switch] or ALL_SWITCHES for all switches}
         self.types = concern_types
 
+    def serialize(self):
+        types = {}
+        for type, switches in self.types.items():
+            if switches != self.ALL_SWITCHES:
+                types[type] = []
+                for switch in switches:
+                    types[type].append(switch.serialize())
+            else:
+                types[type] = switches
+        return (self.controller.serialize(), types)
+
+    @classmethod
+    def deserialize(cls, data):
+        print data
+        types = {}
+        for type, switches in data[1].items():
+            print switches
+            if switches != cls.ALL_SWITCHES:
+                types[type] = set()
+                for switch in switches:
+                    types[type].add(Switch.deserialize(switch))
+            else:
+                types[type] = switches
+        return cls(Controller.deserialize(data[0]), types)
+
     def __repr__(self):
         return object_to_string(self,
                     controller = self.controller,
                     types = self.types)
+
+
+class RoutingPacketContent(object):
+
+    def __init__(self, controller, controllers_update, controllers_remove):
+        self.controller = controller
+        self.update = controllers_update
+        self.remove = controllers_remove
+
+    def serialize(self):
+        update = []
+        for controller, path in self.update:
+            update.append((controller.serialize(), list(path)))
+        remove = []
+        for controller in self.remove:
+            update.append(controller.serialize())
+        return (self.controller.serialize(), update, remove)
+
+    @classmethod
+    def deserialize(cls, data):
+        update = []
+        for controller, path in data[1]:
+            update.append((Device.deserialize(controller), set(path)))
+        remove = []
+        for controller in data[2]:
+            update.append(Device.deserialize(controller))
+        return cls(Device.deserialize(data[0]), update, remove)
+
+    def __repr__(self):
+        return object_to_string(self,
+                    controller = self.controller,
+                    update = self.update,
+                    remove = self.remove)
+
+
+class Packet(object):
+    '''
+    报文，该类中的常量表示报文的类型
+    '''
+
+    HELLO = 1
+    CONTROL_FROM_SWITCH = 2
+    CONTROL_FROM_API = 3
+    REGISTER_CONCERN = 4
+    LOCAL_CONCERN = 5
+    ROUTING = 6
+
+    DESERIALIZER = {
+            HELLO: HelloPacketContent,
+            REGISTER_CONCERN: RegisterConcersContent,
+            ROUTING: RoutingPacketContent,
+    }
+
+    def __init__(self, packet_type, content):
+        self.src = None
+        self.dst = None
+        self.type = packet_type
+        self.content = content
+
+    def serialize(self):
+        return (self.src.serialize(),
+                self.dst.serialize(),
+                self.type, self.content.serialize())
+
+    @classmethod
+    def deserialize(cls, data):
+        deserializer = cls.DESERIALIZER[data[2]]
+        content = deserializer.deserialize(data[3])
+        packet = Packet(data[2], content)
+        packet.src = Device.deserialize(data[0])
+        packet.dst = Device.deserialize(data[1])
+        return packet
+
+    def __repr__(self):
+        return object_to_string(self,
+                    type = self.type,
+                    content = self.content)
 
 
 class ControlPacketContent(object):

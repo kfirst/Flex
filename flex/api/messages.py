@@ -51,6 +51,7 @@ class PacketInMessage(BaseMessage):
         self.switch = Switch(api, content.src)
         self.port = content.port
         self.data = content.data
+        self.ofp = content.ofp
         self._parsed = None
 
     @property

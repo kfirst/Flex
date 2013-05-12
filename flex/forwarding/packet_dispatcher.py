@@ -25,9 +25,9 @@ class PacketDispatcher(DataHandler):
     def _handle(self, packet):
         try:
             handler = self._handlers[packet.type]
-            logger.debug('Received Packet from ' + str(packet.tracker.src) + ', ' + str(packet))
+            logger.debug('Received Packet from %s, %s' % (packet.src, packet))
             handler.handle_packet(packet)
             return True
         except KeyError:
-            logger.warning('Received undefined Packet from ' + str(packet.tracker.src) + ', ' + str(packet))
+            logger.warning('Received undefined Packet from %s, %s' % (packet.src, packet))
             return False

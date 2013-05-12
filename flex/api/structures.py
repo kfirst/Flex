@@ -40,8 +40,8 @@ class Switch(BaseSwitch):
         self._api._add_hanlders(obj, set([self._switch]))
 
     @property
-    def connection_time(self):
-        return core.topology.connection_time(self._switch)
+    def connect_time(self):
+        return core.topology.connect_time(self._switch)
 
     def send(self, message):
         content = message.to_content(self._switch)

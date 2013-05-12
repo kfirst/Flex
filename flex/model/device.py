@@ -9,11 +9,26 @@ from flex.lib.util import object_to_string
 
 class Device(object):
 
+    devices = {}
+
     def __init__(self, device_id):
         self.__id = device_id
+        Device.devices[device_id] = self
 
     def get_id(self):
         return self.__id
+
+    def serialize(self):
+        return self.__id;
+
+    @classmethod
+    def deserialize(cls, data):
+        try:
+            device = Device.devices[data]
+        except KeyError:
+            device = cls(data)
+            Device.devices[data] = device
+        return device
 
     def __repr__(self):
         return object_to_string(self, self.__id)

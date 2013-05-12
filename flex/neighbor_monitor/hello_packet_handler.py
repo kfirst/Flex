@@ -9,7 +9,7 @@ from flex.core import core
 from flex.base.handler import PacketHandler, EventHandler
 from flex.base.event import NeighborControllerUpEvent
 from flex.model.packet import HelloPacketContent, Packet
-from flex.topology.topology import Topology
+from flex.neighbor_monitor.neighbor_monitor import NeighborMonitor
 
 logger = core.get_logger()
 
@@ -23,9 +23,9 @@ class HelloPacketHandler(PacketHandler, EventHandler):
     并产生NeighborControllerUp事件。
     '''
 
-    PROVIDER = Topology.PROVIDER
-    PEER = Topology.PEER
-    CUSTOMER = Topology.CUSTOMER
+    PROVIDER = NeighborMonitor.PROVIDER
+    PEER = NeighborMonitor.PEER
+    CUSTOMER = NeighborMonitor.CUSTOMER
 
     UP = True
     DOWN = False
@@ -90,4 +90,6 @@ class HelloPacketHandler(PacketHandler, EventHandler):
         return self._packet
 
     def _send_packet(self, packet, dst):
-        core.forwarding.forward(packet, dst)
+        packet.src = self._myself
+        packet.dst = dst
+        core.forwarding.forward(packet)

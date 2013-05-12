@@ -137,6 +137,7 @@ class ClientHandler(ConnectionHandler):
         self._network = network
         self._receive_buffer = b''
         self._send_buffer = []
+        self._current_to_send = b''
 
     def handle(self, event):
         if event & select.EPOLLHUP:
@@ -157,11 +158,11 @@ class ClientHandler(ConnectionHandler):
                 self._network._remove_connection(self._connection)
         elif event & select.EPOLLOUT:
             if self._send_buffer:
-                writen = self._connection.send(self._send_buffer[0])
-                if len(self._send_buffer[0]) == writen:
-                    del self._send_buffer[0]
-                else:
-                    self._send_buffer[0] = self._send_buffer[0][writen:]
+                send_buffer, self._send_buffer = self._send_buffer, []
+                self._current_to_send += ''.join(send_buffer)
+            if self._current_to_send:
+                writen = self._connection.send(self._current_to_send)
+                self._current_to_send = self._current_to_send[writen:]
             else:
                 self._network._modify_mask(self._connection, select.EPOLLIN)
 

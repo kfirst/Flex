@@ -12,6 +12,7 @@ logger = core.get_logger()
 class TopologyPacketHandler(object):
 
     def __init__(self, myself):
+        self._myself = myself
         self._my_id = myself.get_id();
         # {controller: {controller: path}}
         self._nexthops_of_device = {}
@@ -20,7 +21,9 @@ class TopologyPacketHandler(object):
         self._connection_time = {}
 
     def _send_packet(self, packet, dst):
-        core.forwarding.forward(packet, dst)
+        packet.src = self._myself
+        packet.dst = dst
+        core.forwarding.forward(packet)
 
     def nexthop_of_device(self, device):
         return self._nexthop_of_device[device][0]

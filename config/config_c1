@@ -4,10 +4,12 @@
 		"core": {
 			#core模块启动后需要载入的模块列表
 			"module": [
+				"flex.storage",
+				"flex.neighbor_monitor",
 				"flex.network",
+				"flex.routing",
 				"flex.forwarding",
-				"flex.topology",
-				"flex.control_packet_forwarding",
+				"flex.concern_packet_forwarding",
 				"flex.pox"
 			]
 		},
@@ -25,6 +27,11 @@
 		#network模块的配置，包括地址和连接数等
 		"network": {
 			"backlog": 50
+		},
+		"storage": {
+			"globalStorage": {
+				"servers": ["127.0.0.1"]
+			}
 		},
 		"pox": {
 			"pox_command_line": "openflow.of_01 --port=10101",

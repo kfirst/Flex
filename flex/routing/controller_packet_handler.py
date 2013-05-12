@@ -7,9 +7,9 @@ Created on 2013-3-30
 
 from flex.core import core
 from flex.base.handler import PacketHandler, EventHandler
-from flex.model.packet import TopologyControllerPacketContent, Packet
-from flex.topology.topology import Topology
-from flex.topology.topology_packet_handler import TopologyPacketHandler
+from flex.model.packet import Packet, RoutingPacketContent
+from flex.routing.topology_packet_handler import TopologyPacketHandler
+from flex.neighbor_monitor.neighbor_monitor import NeighborMonitor
 
 logger = core.get_logger()
 
@@ -24,9 +24,9 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
     发给除发送者外的已经up的peer或customer。
     '''
 
-    PROVIDER = Topology.PROVIDER
-    PEER = Topology.PEER
-    CUSTOMER = Topology.CUSTOMER
+    PROVIDER = NeighborMonitor.PROVIDER
+    PEER = NeighborMonitor.PEER
+    CUSTOMER = NeighborMonitor.CUSTOMER
 
     def __init__(self, myself, hello):
         super(ControllerPacketHandler, self).__init__(myself)
@@ -41,8 +41,8 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
             for controller, nexthop in self._nexthop_of_device.items():
                 update.append((controller, nexthop[1]))
             if update:
-                content = TopologyControllerPacketContent(self._myself, update, [])
-                packet = Packet(Packet.TOPO_CONTROLLER, content)
+                content = RoutingPacketContent(self._myself, update, [])
+                packet = Packet(Packet.ROUTING, content)
                 self._send_packet(packet, dst)
 
     def handle_packet(self, packet):
@@ -67,8 +67,8 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
         update += self._update(src, packet.content.update)
         # network send packet
         if update or remove:
-            content = TopologyControllerPacketContent(self._myself, update, remove)
-            packet = Packet(Packet.TOPO_CONTROLLER, content)
+            content = RoutingPacketContent(self._myself, update, remove)
+            packet = Packet(Packet.ROUTING, content)
             for customer in self._hello.get_customers():
                 if customer != src:
                     self._send_packet(packet, customer)

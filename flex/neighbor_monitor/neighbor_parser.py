@@ -9,7 +9,7 @@ from flex.model.device import Controller
 from flex.core import core
 from flex.topology.topology import Topology
 
-class TopologyParser(object):
+class NeighborParser(object):
 
     def __init__(self, config):
         self.myself = core.myself.get_self_controller()

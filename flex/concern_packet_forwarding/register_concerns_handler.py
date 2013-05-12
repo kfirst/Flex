@@ -31,10 +31,10 @@ class RegisterConcernsHandler(PacketHandler):
                     added_switches = controller_concerns[concern_type]
                     if added_switches != self.ALL_SWITCHES:
                         if switches != self.ALL_SWITCHES:
-                            switches -= added_switches
-                            if switches:
-                                added_switches.update(switches)
-                                new_concern_types[concern_type] = switches
+                            new_switches = switches - added_switches
+                            if new_switches:
+                                added_switches.update(new_switches)
+                                new_concern_types[concern_type] = new_switches
                         else:
                             controller_concerns[concern_type] = self.ALL_SWITCHES
                             new_concern_types[concern_type] = switches
@@ -47,19 +47,22 @@ class RegisterConcernsHandler(PacketHandler):
         if new_concern_types:
             packet.content.types = new_concern_types
             self._send_to_neighbor(packet)
-        if core.has_component('pox'):
+        if core.has_component('controllerAdaptor'):
             self._send_to_local(packet)
 
     def _send_to_neighbor(self, packet):
-        topo = core.topology
+        neighbors = core.neighborMonitor
         forwarding = core.forwarding
-        customers = topo.get_customers()
+        customers = neighbors.get_customers()
         for customer in customers:
-            forwarding.forward(packet, customer)
-        peers = topo.get_peers()
+            packet.dst = customer
+            forwarding.forward(packet)
+        peers = neighbors.get_peers()
         for peer in peers:
-            forwarding.forward(packet, peer)
+            packet.dst = peer
+            forwarding.forward(packet)
 
     def _send_to_local(self, packet):
         packet.type = Packet.LOCAL_CONCERN
+        packet.dst = None
         core.forwarding.forward(packet)
