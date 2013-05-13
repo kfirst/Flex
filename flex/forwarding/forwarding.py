@@ -43,7 +43,7 @@ class Forwarding(Module):
         若不指定Controlller，则自己Controller内部关心该类型报文的模块将接收到该报文
         '''
         dst = packet.dst
-        if not dst:
+        if not dst or dst.get_id() == self._myself.get_id():
             return self._dispatch(packet)
         else:
             address = core.routing.get_address(dst)

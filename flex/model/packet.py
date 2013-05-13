@@ -28,46 +28,6 @@ class HelloPacketContent(object):
                     response = self.response)
 
 
-class RegisterConcersContent(object):
-
-    ALL_SWITCHES = 0
-
-    def __init__(self, controller, concern_types):
-        self.controller = controller
-        # {type: [Switch] or ALL_SWITCHES for all switches}
-        self.types = concern_types
-
-    def serialize(self):
-        types = {}
-        for type, switches in self.types.items():
-            if switches != self.ALL_SWITCHES:
-                types[type] = []
-                for switch in switches:
-                    types[type].append(switch.serialize())
-            else:
-                types[type] = switches
-        return (self.controller.serialize(), types)
-
-    @classmethod
-    def deserialize(cls, data):
-        print data
-        types = {}
-        for type, switches in data[1].items():
-            print switches
-            if switches != cls.ALL_SWITCHES:
-                types[type] = set()
-                for switch in switches:
-                    types[type].add(Switch.deserialize(switch))
-            else:
-                types[type] = switches
-        return cls(Controller.deserialize(data[0]), types)
-
-    def __repr__(self):
-        return object_to_string(self,
-                    controller = self.controller,
-                    types = self.types)
-
-
 class RoutingPacketContent(object):
 
     def __init__(self, controller, controllers_update, controllers_remove):
@@ -101,6 +61,27 @@ class RoutingPacketContent(object):
                     remove = self.remove)
 
 
+class StoragePacketContent(object):
+
+    def __init__(self, key, value, type):
+        self.key = key
+        self.value = value
+        self.type = type
+
+    def serialize(self):
+        return (self.key, self.type)
+
+    @classmethod
+    def deserialize(cls, data):
+        return cls(*data)
+
+    def __repr__(self):
+        return object_to_string(self,
+                    key = self.key,
+                    value = self.value,
+                    type = self.type)
+
+
 class Packet(object):
     '''
     报文，该类中的常量表示报文的类型
@@ -109,14 +90,13 @@ class Packet(object):
     HELLO = 1
     CONTROL_FROM_SWITCH = 2
     CONTROL_FROM_API = 3
-    REGISTER_CONCERN = 4
-    LOCAL_CONCERN = 5
-    ROUTING = 6
+    ROUTING = 4
+    STORAGE = 5
 
     DESERIALIZER = {
             HELLO: HelloPacketContent,
-            REGISTER_CONCERN: RegisterConcersContent,
             ROUTING: RoutingPacketContent,
+            STORAGE: StoragePacketContent,
     }
 
     def __init__(self, packet_type, content):

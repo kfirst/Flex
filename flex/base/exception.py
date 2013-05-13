@@ -16,3 +16,7 @@ class SwitchNotFoundException(Exception):
 
 class ConnectFailException(Exception):
     pass
+
+
+class IllegalKeyException(Exception):
+    pass

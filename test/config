@@ -28,7 +28,11 @@
 		},
 		"storage": {
 			"globalStorage": {
-				"servers": ["127.0.0.1"]
+				"servers": [
+					["127.0.0.1", 6379]
+				]
+			},
+			"appStorage": {
 			}
 		},
 		"pox": {

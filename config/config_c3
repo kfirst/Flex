@@ -9,7 +9,6 @@
 				"flex.network",
 				"flex.routing",
 				"flex.forwarding",
-				"flex.concern_packet_forwarding",
 				"flex.api",
 				"app.l2_learning"
 			]
@@ -31,7 +30,11 @@
 		},
 		"storage": {
 			"globalStorage": {
-				"servers": ["127.0.0.1"]
+				"servers": [
+					["127.0.0.1", 6379]
+				]
+			},
+			"appStorage": {
 			}
 		},
 		"pox": {

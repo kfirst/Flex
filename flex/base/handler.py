@@ -40,3 +40,9 @@ class EventHandler(object):
     '''
     def handle_event(self, event):
         pass
+
+
+class StorageHandler(object):
+
+    def handle_storage(self, key, value, type):
+        pass

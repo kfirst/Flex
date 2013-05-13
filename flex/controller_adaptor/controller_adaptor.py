@@ -5,17 +5,19 @@ Created on 2013-5-12
 '''
 
 from flex.base.module import Module
-from flex.base.handler import PacketHandler
+from flex.base.handler import PacketHandler, StorageHandler
 from flex.core import core
-from flex.model.packet import Packet, RegisterConcersContent
+from flex.model.packet import Packet
 import random
+from flex.api.api import Api
 
 logger = core.get_logger()
 
 
-class ControllerAdaptor(Module, PacketHandler):
+class ControllerAdaptor(Module, PacketHandler, StorageHandler):
 
-    ALL_SWITCHES = RegisterConcersContent.ALL_SWITCHES
+    CONCERN = Api.CONCERN
+    GLOBAL = Api.GLOBAL
 
     def __init__(self, app_name, algorithms):
         self.app = getattr(core, app_name)
@@ -27,27 +29,31 @@ class ControllerAdaptor(Module, PacketHandler):
                 self._algorithms.append((getattr(self, algorithm), parameters))
             except AttributeError:
                 logger.warning('Algorithm ' + algorithm + ' is not found!')
-        core.forwarding.register_handler(Packet.LOCAL_CONCERN, self)
 
-    def handle_packet(self, packet):
-        controller = packet.content.controller
-        concern_types = packet.content.types
-        for concern_type, switches in concern_types.items():
-            try:
-                switch_controllers = self.controllers[concern_type]
-                if switches == self.ALL_SWITCHES:
-                    try:
-                        switch_controllers[switches].add(controller)
-                    except KeyError:
-                        switch_controllers[switches] = set([controller])
-                else:
-                    for switch in switches:
-                        try:
-                            switch_controllers[switch].add(controller)
-                        except KeyError:
-                            switch_controllers[switch] = set([controller])
-            except KeyError:
-                self.controllers[concern_type] = {switches: set([controller])}
+    def start(self):
+        core.forwarding.register_handler(Packet.STORAGE, self)
+        core.storage.listen(self.GLOBAL, self,)
+
+    def handle_storage(self, key, value, type):
+        pass
+#        controller = packet.content.controller
+#        concern_types = packet.content.types
+#        for concern_type, switches in concern_types.items():
+#            try:
+#                switch_controllers = self.controllers[concern_type]
+#                if switches == self.ALL_SWITCHES:
+#                    try:
+#                        switch_controllers[switches].add(controller)
+#                    except KeyError:
+#                        switch_controllers[switches] = set([controller])
+#                else:
+#                    for switch in switches:
+#                        try:
+#                            switch_controllers[switch].add(controller)
+#                        except KeyError:
+#                            switch_controllers[switch] = set([controller])
+#            except KeyError:
+#                self.controllers[concern_type] = {switches: set([controller])}
 
     def forward(self, packet):
         switch = packet.src

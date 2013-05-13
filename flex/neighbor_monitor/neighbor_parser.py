@@ -7,7 +7,7 @@ Created on 2013-3-26
 
 from flex.model.device import Controller
 from flex.core import core
-from flex.topology.topology import Topology
+from flex.neighbor_monitor.neighbor_monitor import NeighborMonitor
 
 class NeighborParser(object):
 
@@ -43,13 +43,13 @@ class NeighborParser(object):
         provider = set()
         for cid in neighbor_info:
             controller = self.controllers[cid]
-            if neighbor_info[cid] == Topology.PEER:
+            if neighbor_info[cid] == NeighborMonitor.PEER:
                 peer.add(controller)
-            elif neighbor_info[cid] == Topology.CUSTOMER:
+            elif neighbor_info[cid] == NeighborMonitor.CUSTOMER:
                 customer.add(controller)
-            elif neighbor_info[cid] == Topology.PROVIDER:
+            elif neighbor_info[cid] == NeighborMonitor.PROVIDER:
                 provider.add(controller)
-        relation[Topology.PEER] = peer
-        relation[Topology.CUSTOMER] = customer
-        relation[Topology.PROVIDER] = provider
+        relation[NeighborMonitor.PEER] = peer
+        relation[NeighborMonitor.CUSTOMER] = customer
+        relation[NeighborMonitor.PROVIDER] = provider
         return relation

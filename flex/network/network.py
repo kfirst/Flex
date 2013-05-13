@@ -23,7 +23,7 @@ class Network(Module):
     def __init__(self, address, backlog):
         self._address = address
         self._backlog = backlog
-        self._run = True
+        self._run = 1
         # address => connection
         self._connections = {}
         # address => fd
@@ -107,7 +107,7 @@ class Network(Module):
         thread.start()
 
     def terminate(self):
-        self._run = False
+        self._run = 0
         self._epoll.unregister(self._server.get_fileno())
         for address in self._connection_fds:
             fd = self._connection_fds[address]
@@ -147,7 +147,7 @@ class ClientHandler(ConnectionHandler):
             if data:
                 self._receive_buffer += data
                 try:
-                    while(True):
+                    while 1:
                         index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
                         data = self._decode_data(self._receive_buffer[0:index])
                         self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
@@ -167,7 +167,7 @@ class ClientHandler(ConnectionHandler):
                 self._network._modify_mask(self._connection, select.EPOLLIN)
 
     def send(self, data):
-        self._send_buffer.append(self._encode_data(data) + self.EOL)
+        self._send_buffer.append('$s$s' % (self._encode_data(data), self.EOL))
         self._network._modify_mask(self._connection, select.EPOLLIN | select.EPOLLOUT)
 
     def _encode_data(self, data):
