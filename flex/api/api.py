@@ -14,8 +14,8 @@ logger = core.get_logger()
 
 class Api(Module, PacketHandler):
 
-    CONCERN = 'concern'
-    GLOBAL = CONCERN + ':global'
+    LOCAL_CONCERN = 'local_concern'
+    GLOBAL_CONCERN = 'global_concern'
 
     def __init__(self, self_controller):
         self._myself = self_controller
@@ -87,7 +87,13 @@ class Api(Module, PacketHandler):
 
     def _add_concern(self, concern_types, switches):
         if switches is None:
-            core.globalStorage.sadd_multi(self.GLOBAL, concern_types)
+            core.globalStorage.sadd_multi(
+                    self._myself.get_id(),
+                    concern_types,
+                    self.GLOBAL_CONCERN)
         else:
             for switch in switches:
-                core.globalStorage.sadd_multi('%s:%s' % (self.CONCERN, switch.get_id()), concern_types)
+                core.globalStorage.sadd_multi(
+                        self._myself.get_id(),
+                        concern_types,
+                        '%s:%s' % (self.LOCAL_CONCERN, switch.get_id()))

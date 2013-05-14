@@ -23,7 +23,7 @@ class Routing(Module):
         self.controller = ControllerPacketHandler(myself, core.neighborMonitor)
         core.forwarding.register_handler(Packet.ROUTING, self.controller)
         core.event.register_handler(event.NeighborControllerUpEvent, self.controller)
-        core.globalStorage.set('%s:%s' % (self.ROUTING, myself.get_id()), myself.get_address())
+        core.globalStorage.set(myself.get_id(), myself.get_address(), self.ROUTING)
         if core.has_component('api'):
             controllers_update = [(myself, set())]
             content = RoutingPacketContent(myself, controllers_update, [])
@@ -38,7 +38,7 @@ class Routing(Module):
         try:
             return self.routing[device_id]
         except KeyError:
-            address = core.globalStorage.get('%s:%s' % (self.ROUTING, device_id))
+            address = core.globalStorage.get(device_id, self.ROUTING)
             if address:
                 self.routing[device_id] = address
             return address

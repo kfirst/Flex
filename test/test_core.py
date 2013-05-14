@@ -6,11 +6,21 @@ Created on 2013-4-6
 
 from flex.core import core
 import time
+from flex.base.handler import StorageHandler
+
+class testListen(StorageHandler):
+
+    def handle_storage(self, key, value, domain, type):
+        print key
+        print value
+
+
 core.set_config_path('config')
 core.start()
 logger = core.get_logger()
 logger.warning('test')
-print core.myself.get_self_controller()
-print core.globalStorage.sadd_multi('bb', ([1, 2], 'a'))
-print core.globalStorage.sget('b')
+core.myself.get_self_controller()
+print core.globalStorage.sget('bbbbbbbbb')
+core.globalStorage.listen_domain(testListen(), 'default', listen_myself = True)
+core.globalStorage.sadd_multi('bb', ([1, 2], 'a'))
 time.sleep(1)

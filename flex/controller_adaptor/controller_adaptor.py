@@ -8,94 +8,67 @@ from flex.base.module import Module
 from flex.base.handler import PacketHandler, StorageHandler
 from flex.core import core
 from flex.model.packet import Packet
-import random
 from flex.api.api import Api
+from flex.model.device import Device
+from flex.controller_adaptor.selection_algorithms import SelectionAlgorithms
 
 logger = core.get_logger()
 
 
 class ControllerAdaptor(Module, PacketHandler, StorageHandler):
 
-    CONCERN = Api.CONCERN
-    GLOBAL = Api.GLOBAL
+    LOCAL_CONCERN = Api.LOCAL_CONCERN
+    GLOBAL_CONCERN = Api.GLOBAL_CONCERN
 
     def __init__(self, app_name, algorithms):
         self.app = getattr(core, app_name)
-        self.controllers = {}
+        self._global_controllers = {}
+        self._local_controllers = {}
         self._algorithms = []
         self._myself = core.myself.get_self_controller()
         for algorithm, parameters in algorithms.items():
             try:
-                self._algorithms.append((getattr(self, algorithm), parameters))
+                self._algorithms.append((getattr(SelectionAlgorithms, algorithm), parameters))
             except AttributeError:
                 logger.warning('Algorithm ' + algorithm + ' is not found!')
 
     def start(self):
         core.forwarding.register_handler(Packet.STORAGE, self)
-        core.storage.listen(self.GLOBAL, self,)
+        core.storage.listen_domain(self, self.GLOBAL_CONCERN, True)
 
-    def handle_storage(self, key, value, type):
-        pass
-#        controller = packet.content.controller
-#        concern_types = packet.content.types
-#        for concern_type, switches in concern_types.items():
-#            try:
-#                switch_controllers = self.controllers[concern_type]
-#                if switches == self.ALL_SWITCHES:
-#                    try:
-#                        switch_controllers[switches].add(controller)
-#                    except KeyError:
-#                        switch_controllers[switches] = set([controller])
-#                else:
-#                    for switch in switches:
-#                        try:
-#                            switch_controllers[switch].add(controller)
-#                        except KeyError:
-#                            switch_controllers[switch] = set([controller])
-#            except KeyError:
-#                self.controllers[concern_type] = {switches: set([controller])}
+    def handle_storage(self, key, value, domain, type):
+        if domain == self.GLOBAL_CONCERN:
+            controller = Device.deserialize(key)
+            for concern_type in value:
+                try:
+                    self._global_controllers[concern_type].add(controller)
+                except KeyError:
+                    self._global_controllers[concern_type] = set([controller])
+        else:
+            pass
 
     def forward(self, packet):
         switch = packet.src
         type = packet.content.type
         controllers = self._get_controllers(type, switch)
-        self._send_packet(controllers, packet)
+        for algorithm, parameter in self._algorithms:
+            controllers = algorithm(controllers, *parameter)
+        packet.src = self._myself
+        for controller in controllers:
+            self._send_packet(controller, packet)
 
     def _get_controllers(self, type, switch):
         controllers = set()
         try:
-            controllers.update(self.controllers[type][self.ALL_SWITCHES])
+            controllers.update(self._global_controllers[type])
         except KeyError:
             pass
         try:
-            controllers.update(self.controllers[type][switch])
+            controllers.update(self._local_controllers[type][switch])
         except KeyError:
             pass
         return controllers
 
-    def _send_packet(self, controllers, packet):
-        for algorithm, parameter in self._algorithms:
-                controllers = algorithm(controllers, *parameter)
-        for controller in controllers:
-            packet.src = self._myself
-            packet.dst = controller
-            core.forwarding.forward(packet)
-
-    def shortest_path(self, controllers):
-        ret = []
-        shorest = None
-        for controller in controllers:
-            distance = core.routing.get_distance(controller)
-            if shorest == None or distance < shorest:
-                shorest = distance
-                ret = [controller]
-            elif distance == shorest:
-                ret.append(controller)
-        return ret
-
-    def first(self, controllers):
-        return [controllers[0]]
-
-    def sample(self, controllers, size):
-        return random.sample(controllers, min(len(controllers), size))
-
+    def _send_packet(self, controller, packet):
+        packet.dst = controller
+        core.forwarding.forward(packet)

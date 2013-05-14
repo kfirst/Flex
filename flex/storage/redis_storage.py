@@ -19,12 +19,15 @@ class RedisStorage(Module, PacketHandler):
     SET = 1
     SADD = 2
     SADD_MULTI = 3
+    SREMOVE = 4
+    DELETE = 5
 
     def __init__(self, servers):
         self._myself = core.myself.get_self_controller()
-        self._packet = Packet(Packet.STORAGE, StoragePacketContent(None, None, None))
+        self._packet = Packet(Packet.STORAGE, StoragePacketContent(None, None, None, None))
         self._packet.src = self._myself
-        self._handlers = {}
+        self._key_handlers = {}
+        self._domain_handlers = {}
         self._keys_need_notify = Queue.Queue()
         self._pool = redis.ConnectionPool()
         self._num = len(servers)
@@ -36,44 +39,66 @@ class RedisStorage(Module, PacketHandler):
         self._start_thread()
 
     def _create_redis(self, server, port, pool):
-        return redis.StrictRedis(host = server, port = port, connection_pool = pool)
+        return redis.Redis(host = server, port = port, connection_pool = pool)
 
     def _get_redis(self, key):
         num = hash(key) % self._num
         return self._redises[num]
 
     def _check_key(self, key):
-        if key.startswith('#'):
-            raise IllegalKeyException('Key could NOT start with _')
+        if key.startswith('@') or key.startswith('#'):
+            raise IllegalKeyException('Key could NOT start with @, #')
 
-    def get(self, key):
-        return self._get_redis(key).get(key)
+    def _make_name(self, key, domain):
+        return '%s:%s' % (domain, key)
 
-    def set(self, key, value):
+    def get(self, key, domain = 'default'):
+        name = self._make_name(key, domain)
+        return self._get_redis(name).get(name)
+
+    def set(self, key, value, domain = 'default'):
         self._check_key(key)
-        redis = self._get_redis(key)
-        ret = redis.set(key, value)
-        self._keys_need_notify.put((key, value, redis, self.SET))
+        name = self._make_name(key, domain)
+        redis = self._get_redis(name)
+        ret = redis.set(name, value)
+        self._keys_need_notify.put((key, value, domain, self.SET))
         return ret
 
-    def sget(self, key):
-        return self._get_redis(key).smembers(key)
-
-    def sadd(self, key, value):
-        self._check_key(key)
-        redis = self._get_redis(key)
-        ret = redis.sadd(key, value)
-        self._keys_need_notify.put((key, value, redis, self.SADD))
+    def delete(self, key, domain = 'default'):
+        name = self._make_name(key, domain)
+        redis = self._get_redis(name)
+        ret = redis.delete(name)
+        self._keys_need_notify.put((key, None, domain, self.DELETE))
         return ret
 
-    def sadd_multi(self, key, values):
+    def sget(self, key, domain = 'default'):
+        name = self._make_name(key, domain)
+        return self._get_redis(name).smembers(name)
+
+    def sadd(self, key, value, domain = 'default'):
         self._check_key(key)
-        redis = self._get_redis(key)
+        name = self._make_name(key, domain)
+        redis = self._get_redis(name)
+        ret = redis.sadd(name, value)
+        self._keys_need_notify.put((key, value, domain, self.SADD))
+        return ret
+
+    def sremove(self, key, value, domain = 'default'):
+        name = self._make_name(key, domain)
+        redis = self._get_redis(name)
+        ret = redis.srem(name, value)
+        self._keys_need_notify.put((key, value, domain, self.SREMOVE))
+        return ret
+
+    def sadd_multi(self, key, values, domain = 'default'):
+        self._check_key(key)
+        name = self._make_name(key, domain)
+        redis = self._get_redis(name)
         pipe = redis.pipeline()
         for value in values:
-            pipe.sadd(key, value)
+            pipe.sadd(name, value)
         ret = pipe.execute()
-        self._keys_need_notify.put((key, values, redis, self.SADD_MULTI))
+        self._keys_need_notify.put((key, values, domain, self.SADD_MULTI))
         return ret
 
     def _start_thread(self):
@@ -83,37 +108,72 @@ class RedisStorage(Module, PacketHandler):
 
     def _schedule(self):
         while 1:
-            key, value, redis, type = self._keys_need_notify.get()
-            listeners = redis.smembers('_%s' % (key))
-            if listeners is not None:
-                for listener, listen_myself in listeners:
-                    if listener == self._myself.get_id() and not listen_myself:
-                        continue
-                    self._send_packet(listener, key, value, type)
+            key, value, domain, type = self._keys_need_notify.get()
+            self._notify_domain(key, value, domain, type)
+            self._notify_key(key, value, domain, type)
 
-    def _send_packet(self, listener, key, value, type):
+    def _notify_domain(self, key, value, domain, type):
+        listeners = self._get_redis(domain).smembers('#' + domain)
+        listeners = [eval(listener) for listener in listeners]
+        for listener, listen_myself in listeners:
+            if listener == self._myself.get_id() and not listen_myself:
+                continue
+            self._send_packet(listener, key, value, domain, type)
+
+    def _notify_key(self, key, value, domain, type):
+        name = self._make_name(key, domain)
+        listeners = self._get_redis(name).smembers('@' + name)
+        listeners = [eval(listener) for listener in listeners]
+        for listener, listen_myself in listeners:
+            if listener == self._myself.get_id() and not listen_myself:
+                continue
+            self._send_packet(listener, key, value, domain, type)
+
+    def _send_packet(self, listener, key, value, domain, type):
         dst = Device.deserialize(listener)
         packet = self._packet
         packet.dst = dst
         packet.content.key = key
         packet.content.value = value
+        packet.content.domain = domain
         packet.content.type = type
         core.forwarding.forward(self._packet)
 
-    def listen(self, key, storage_handler, listen_myself = False):
+    def listen_key(self, storage_handler, key, domain = 'default', listen_myself = False):
+        name = self._make_name(key, domain)
         try:
-            self._handlers[key].add(storage_handler)
+            self._key_handlers[name].add(storage_handler)
         except KeyError:
-            self._handlers[key] = set(storage_handler)
-        self._get_redis(key).sadd('_%s' % key, (self._myself.serialize(), listen_myself))
+            self._key_handlers[name] = set([storage_handler])
+        redis = self._get_redis(name)
+        redis.sadd('@' + name, (self._myself.serialize(), listen_myself))
+        if not listen_myself:
+            redis.srem('@' + name, (self._myself.serialize(), True))
+
+    def listen_domain(self, storage_handler, domain, listen_myself = False):
+        try:
+            self._domain_handlers[domain].add(storage_handler)
+        except KeyError:
+            self._domain_handlers[domain] = set([storage_handler])
+        redis = self._get_redis(domain)
+        redis.sadd('#' + domain, (self._myself.serialize(), listen_myself))
+        if not listen_myself:
+            redis.srem('#' + domain, (self._myself.serialize(), True))
 
     def handle_packet(self, packet):
         key = packet.content.key
         value = packet.content.value
+        domain = packet.content.domain
         type = packet.content.type
         try:
-            handlers = self._handlers[key]
+            handlers = self._domain_handlers[domain]
             for handler in handlers:
-                handler.handle(key, value, type)
+                handler.handle_storage(key, value, domain, type)
+        except KeyError:
+            pass
+        try:
+            handlers = self._key_handlers[self._make_name(key, domain)]
+            for handler in handlers:
+                handler.handle_storage(key, value, domain, type)
         except KeyError:
             pass

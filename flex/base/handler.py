@@ -44,5 +44,5 @@ class EventHandler(object):
 
 class StorageHandler(object):
 
-    def handle_storage(self, key, value, type):
+    def handle_storage(self, key, value, domain, type):
         pass

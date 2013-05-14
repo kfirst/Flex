@@ -63,9 +63,10 @@ class RoutingPacketContent(object):
 
 class StoragePacketContent(object):
 
-    def __init__(self, key, value, type):
+    def __init__(self, key, value, domain, type):
         self.key = key
         self.value = value
+        self.domain = domain
         self.type = type
 
     def serialize(self):
@@ -79,6 +80,7 @@ class StoragePacketContent(object):
         return object_to_string(self,
                     key = self.key,
                     value = self.value,
+                    domain = self.domain,
                     type = self.type)
 
 
