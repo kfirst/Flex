@@ -167,7 +167,7 @@ class ClientHandler(ConnectionHandler):
                 self._network._modify_mask(self._connection, select.EPOLLIN)
 
     def send(self, data):
-        self._send_buffer.append('$s$s' % (self._encode_data(data), self.EOL))
+        self._send_buffer.append('%s%s' % (self._encode_data(data), self.EOL))
         self._network._modify_mask(self._connection, select.EPOLLIN | select.EPOLLOUT)
 
     def _encode_data(self, data):

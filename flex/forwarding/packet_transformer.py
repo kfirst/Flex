@@ -15,4 +15,3 @@ class PacketTransformer(object):
 
     def data_to_packet(self, data):
         return Packet.deserialize(pickle.loads(data))
-

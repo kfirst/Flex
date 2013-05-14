@@ -5,8 +5,8 @@
 			#core模块启动后需要载入的模块列表
 			"module": [
 				"flex.storage",
-				"flex.neighbor_monitor",
 				"flex.network",
+				"flex.neighbor_monitor",
 				"flex.routing",
 				"flex.forwarding",
 				"flex.api",
@@ -41,9 +41,8 @@
 			"pox_command_line": "openflow.of_01 --port=10103",
 			"pox_path": "../POX"
 		},
-		#control_packet_forwarding模块的配置，主要功能是：
-		#从关心该类型报文的controlller中选出若干个，将报文转发给这些controller
-		"control_packet_forwarding": {
+		"controller_adaptor": {
+			"app": "pox",
 			"algorithms": {
 				"shortest_path": [],
 				"sample": [1]

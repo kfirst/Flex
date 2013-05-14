@@ -186,8 +186,8 @@ class l2_learning (Module):
         core.api.all_switches.add_listeners(self)
 
     def _handle_ConnectionUp(self, event):
-        logger.debug("Connection %s" % (event.switch,))
-        LearningSwitch(event.switch, self.transparent)
+        logger.debug("Connection %s" % event.src)
+        LearningSwitch(event.src, self.transparent)
 
 
 def launch():

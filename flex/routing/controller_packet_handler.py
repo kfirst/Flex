@@ -46,8 +46,6 @@ class ControllerPacketHandler(TopologyPacketHandler, PacketHandler, EventHandler
                 self._send_packet(packet, dst)
 
     def handle_packet(self, packet):
-        logger.info('Controller Topo packet received')
-
         src = packet.content.controller
         try:
             relation = self._hello.get_neighbor_relation(src)

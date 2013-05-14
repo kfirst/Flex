@@ -6,9 +6,11 @@
 			"module": [
 				"flex.storage",
 				"flex.network",
+				"flex.neighbor_monitor",
 				"flex.routing",
 				"flex.forwarding",
-				"flex.neighbor_monitor"
+				"flex.controller_adaptor",
+				"flex.pox"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
@@ -39,7 +41,8 @@
 			"pox_command_line": "",
 			"pox_path": "../../../POX"
 		},
-		"control_packet_forwarding": {
+		"controller_adaptor": {
+			"app": "pox",
 			"algorithms": {
 				"shortest_path": [],
 				"sample": [1]

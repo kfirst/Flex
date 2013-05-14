@@ -25,7 +25,7 @@ class BaseSwitch(object):
 class AllSwitches(BaseSwitch):
 
     def __init__(self, api):
-        super(AllSwitches, self).__init__(api, api.ALL_SWITCHES)
+        super(AllSwitches, self).__init__(api, None)
 
     def add_listeners(self, obj):
         self._api._add_hanlders(obj, self._switch)

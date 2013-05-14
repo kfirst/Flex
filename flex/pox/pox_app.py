@@ -20,13 +20,16 @@ class PoxApp(Module):
         launch_pox(self._config, self)
         time.sleep(1)
 
-        from flex.pox.flex_handlers import ConcernHandler
-        ConcernHandler()
-        from flex.pox.flex_handlers import LocalHandler
-        LocalHandler()
+        from flex.pox.managers import ConcernManager
+        self.concern_manager = ConcernManager()
+        from flex.pox.managers import ProcesserManager
+        self.processer_manager = ProcesserManager()
 
-        from flex.pox.pox_handlers import TopologyHandler
-        TopologyHandler().add_switches()
+    def register(self, concern_type, switch = None):
+        self.concern_manager.add(concern_type, switch)
+
+    def process(self, api_content):
+        self.processer_manager.process(api_content)
 
     def terminate(self):
         terminate_pox()

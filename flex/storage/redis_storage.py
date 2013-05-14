@@ -12,6 +12,9 @@ from flex.model.device import Device
 from flex.model.packet import Packet, StoragePacketContent
 from flex.base.handler import PacketHandler
 import threading, Queue
+import pickle
+
+logger = core.get_logger()
 
 
 class RedisStorage(Module, PacketHandler):
@@ -52,15 +55,22 @@ class RedisStorage(Module, PacketHandler):
     def _make_name(self, key, domain):
         return '%s:%s' % (domain, key)
 
+    def _data_to_string(self, data):
+        return pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+
+    def _string_to_data(self, string):
+        return pickle.loads(string)
+
     def get(self, key, domain = 'default'):
         name = self._make_name(key, domain)
-        return self._get_redis(name).get(name)
+        value = self._get_redis(name).get(name)
+        return self._string_to_data(value)
 
     def set(self, key, value, domain = 'default'):
         self._check_key(key)
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
-        ret = redis.set(name, value)
+        ret = redis.set(name, self._data_to_string(value))
         self._keys_need_notify.put((key, value, domain, self.SET))
         return ret
 
@@ -114,7 +124,7 @@ class RedisStorage(Module, PacketHandler):
 
     def _notify_domain(self, key, value, domain, type):
         listeners = self._get_redis(domain).smembers('#' + domain)
-        listeners = [eval(listener) for listener in listeners]
+        listeners = [self._string_to_data(listener) for listener in listeners]
         for listener, listen_myself in listeners:
             if listener == self._myself.get_id() and not listen_myself:
                 continue
@@ -123,7 +133,7 @@ class RedisStorage(Module, PacketHandler):
     def _notify_key(self, key, value, domain, type):
         name = self._make_name(key, domain)
         listeners = self._get_redis(name).smembers('@' + name)
-        listeners = [eval(listener) for listener in listeners]
+        listeners = [self._string_to_data(listener) for listener in listeners]
         for listener, listen_myself in listeners:
             if listener == self._myself.get_id() and not listen_myself:
                 continue
@@ -146,9 +156,9 @@ class RedisStorage(Module, PacketHandler):
         except KeyError:
             self._key_handlers[name] = set([storage_handler])
         redis = self._get_redis(name)
-        redis.sadd('@' + name, (self._myself.serialize(), listen_myself))
+        redis.sadd('@' + name, self._data_to_string((self._myself.serialize(), listen_myself)))
         if not listen_myself:
-            redis.srem('@' + name, (self._myself.serialize(), True))
+            redis.srem('@' + name, self._data_to_string((self._myself.serialize(), True)))
 
     def listen_domain(self, storage_handler, domain, listen_myself = False):
         try:
@@ -156,11 +166,12 @@ class RedisStorage(Module, PacketHandler):
         except KeyError:
             self._domain_handlers[domain] = set([storage_handler])
         redis = self._get_redis(domain)
-        redis.sadd('#' + domain, (self._myself.serialize(), listen_myself))
+        redis.sadd('#' + domain, self._data_to_string((self._myself.serialize(), listen_myself)))
         if not listen_myself:
-            redis.srem('#' + domain, (self._myself.serialize(), True))
+            redis.srem('#' + domain, self._data_to_string((self._myself.serialize(), True)))
 
     def handle_packet(self, packet):
+        logger.debug('Storage packet received')
         key = packet.content.key
         value = packet.content.value
         domain = packet.content.domain

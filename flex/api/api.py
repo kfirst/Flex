@@ -17,6 +17,12 @@ class Api(Module, PacketHandler):
     LOCAL_CONCERN = 'local_concern'
     GLOBAL_CONCERN = 'global_concern'
 
+    CONCERN_TYPE = {
+            'ConnectionUp': PoxPacketContent.CONNECTION_UP,
+            'ConnectionDown': PoxPacketContent.CONNECTION_DOWN,
+            'PacketIn': PoxPacketContent.PACKET_IN,
+    }
+
     def __init__(self, self_controller):
         self._myself = self_controller
         self._all_switches = None
@@ -32,7 +38,7 @@ class Api(Module, PacketHandler):
         content = packet.content
         switch = content.src
         control_type = content.type
-        logger.info('CONTROL_FROM_SWITCH [' + control_type + '] packet received')
+        logger.info('CONTROL_FROM_SWITCH [%s] packet received' % control_type)
         handlers = set()
         try:
             handlers.update(self._global_handlers[control_type])
@@ -57,13 +63,14 @@ class Api(Module, PacketHandler):
         for method_name in dir(app):
             method = getattr(app, method_name)
             if callable(method) and method_name.startswith("_handle_"):
-                control_type = method_name[8:]
+                control_type = self.CONCERN_TYPE[method_name[8:]]
                 self._add_method(method, control_type, switches)
                 concern_types.append(control_type)
         if concern_types:
             self._add_concern(concern_types, switches)
 
     def _add_hanlder(self, method, control_type, switches = None):
+        control_type = self.CONCERN_TYPE[control_type]
         self._add_method(method, control_type, switches)
         self._add_concern([control_type], switches)
 
