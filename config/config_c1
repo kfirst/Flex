@@ -16,7 +16,7 @@
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
 		"log": {
 			#级别
-			"level": "DEBUG",
+			"level": "WARNING",
 			#格式
 			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s](%(funcName)s): %(message)s",
 			#输出方式
@@ -44,8 +44,7 @@
 		"controller_adaptor": {
 			"app": "pox",
 			"algorithms": {
-				"shortest_path": [],
-				"sample": [1]
+				"shortest_path": []
 			}
 		}
 	},

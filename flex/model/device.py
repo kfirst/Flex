@@ -61,10 +61,14 @@ class Switch(Device):
         super(Switch, self).__init__(sid)
 
 
-if __name__ == '__main__':
-    controller1 = Controller('cid', ('127.0.0.1', 1100))
-    controller2 = Controller('cid', ('127.0.0.1', 1100))
-    s = {}
-    s[controller1] = 1
-    s[controller2] = 2
-    print s
+class Port(object):
+
+    MAX = 65280
+    IN_PORT = 65528
+    TABLE = 65529
+    NORMAL = 65530
+    FLOOD = 65531
+    ALL = 65532
+    CONTROLLER = 65533
+    LOCAL = 65534
+    NONE = 65535

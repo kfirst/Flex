@@ -7,6 +7,8 @@
 
 from flex.lib.util import object_to_string
 from flex.model.device import Controller, Switch, Device
+from flex.model.action import Action
+from flex.model.match import Match
 
 
 class Packet(object):
@@ -125,7 +127,7 @@ class StoragePacketContent(object):
 
 
 
-class PoxPacketContent(object):
+class SwitchPacketContent(object):
 
     PACKET_IN = 1
     CONNECTION_UP = 2
@@ -138,20 +140,16 @@ class PoxPacketContent(object):
         self.src = src
 
     @classmethod
-    def register_deserializer(cls, content_type):
-        cls.DESERIALIZER[content_type] = cls
-
-    @classmethod
     def deserialize(cls, data):
         deserializer = cls.DESERIALIZER[data[0]]
         return deserializer.deserialize(data)
 
 
-class ConnectionUpContent(PoxPacketContent):
+class ConnectionUpContent(SwitchPacketContent):
 
     def __init__(self, switch):
         super(ConnectionUpContent, self).__init__(
-                PoxPacketContent.CONNECTION_UP, switch)
+                SwitchPacketContent.CONNECTION_UP, switch)
 
     def serialize(self):
         return (self.type, self.src.serialize())
@@ -165,11 +163,11 @@ class ConnectionUpContent(PoxPacketContent):
                     src = self.src)
 
 
-class ConnectionDownContent(PoxPacketContent):
+class ConnectionDownContent(SwitchPacketContent):
 
     def __init__(self, switch):
         super(ConnectionUpContent, self).__init__(
-                PoxPacketContent.CONNECTION_DOWN, switch)
+                SwitchPacketContent.CONNECTION_DOWN, switch)
 
     def serialize(self):
         return (self.type, self.src.serialize())
@@ -183,33 +181,35 @@ class ConnectionDownContent(PoxPacketContent):
                     src = self.src)
 
 
-class PacketInContent(PoxPacketContent):
+class PacketInContent(SwitchPacketContent):
 
     def __init__(self, switch):
         super(PacketInContent, self).__init__(
-                PoxPacketContent.PACKET_IN, switch)
-        self.ofp = None
+                SwitchPacketContent.PACKET_IN, switch)
+        self.buffer_id = None
+        self.port = None
+        self.data = None
 
     def serialize(self):
-        return (self.type, self.src.serialize(), self.ofp)
+        return (self.type, self.src.serialize(),
+                self.buffer_id,
+                self.port,
+                self.data)
 
     @classmethod
     def deserialize(cls, data):
         content = cls(Device.deserialize(data[1]))
-        content.ofp = data[2]
+        content.buffer_id = data[2]
+        content.port = data[3]
+        content.data = data[4]
         return content
 
-    @property
-    def port(self):
-        return self.ofp.in_port
-
-    @property
-    def data(self):
-        return self.ofp.data
-
-    @property
-    def buffer_id(self):
-        return self.ofp.buffer_id
+    def __repr__(self):
+        return object_to_string(self,
+                    src = self.src,
+                    buffer_id = self.buffer_id,
+                    port = self.port,
+                    data_len = len(self.data))
 
 
 
@@ -245,6 +245,30 @@ class PacketOutContent(ApiPacketContent):
         self.data = b''
         self.actions = []
 
+    def serialize(self):
+        actions = [action.serialize() for action in self.actions]
+        return (self.type, self.dst.serialize(),
+                self.port,
+                self.buffer_id,
+                self.data,
+                actions)
+
+    @classmethod
+    def deserialize(cls, data):
+        content = cls(Device.deserialize(data[1]))
+        content.port = data[2]
+        content.buffer_id = data[3]
+        content.data = data[4]
+        content.actions = [Action.deserialize(action) for action in data[5]]
+        return content
+
+    def __repr__(self):
+        return object_to_string(self, self.dst,
+                    port = self.port,
+                    buffer_id = self.buffer_id,
+                    data_len = len(self.data),
+                    actions = self.actions)
+
 
 class FlowModContent(ApiPacketContent):
 
@@ -258,6 +282,34 @@ class FlowModContent(ApiPacketContent):
         self.actions = []
         self.data = None
 
+    def serialize(self):
+        actions = [action.serialize() for action in self.actions]
+        return (self.type, self.dst.serialize(),
+                self.idle_timeout,
+                self.hard_timeout,
+                self.match.serialize(),
+                self.buffer_id,
+                actions,
+                self.data)
+
+    @classmethod
+    def deserialize(cls, data):
+        content = cls(Device.deserialize(data[1]))
+        content.idle_timeout = data[2]
+        content.hard_timeout = data[3]
+        content.match = Match.deserialize(data[4])
+        content.buffer_id = data[5]
+        content.actions = [Action.deserialize(action) for action in data[6]]
+        content.data = data[7]
+        return content
+
+    def __repr__(self):
+        return object_to_string(self, self.dst,
+                    port = self.port,
+                    buffer_id = self.buffer_id,
+                    data_len = len(self.data),
+                    actions = self.actions)
+
 
 
 
@@ -265,12 +317,17 @@ Packet.DESERIALIZER = {
     Packet.HELLO: HelloPacketContent,
     Packet.ROUTING: RoutingPacketContent,
     Packet.STORAGE: StoragePacketContent,
-    Packet.CONTROL_FROM_SWITCH: PoxPacketContent,
+    Packet.CONTROL_FROM_SWITCH: SwitchPacketContent,
     Packet.CONTROL_FROM_API: ApiPacketContent,
 }
 
-PoxPacketContent.DESERIALIZER = {
-    PoxPacketContent.PACKET_IN: PacketInContent,
-    PoxPacketContent.CONNECTION_UP: ConnectionUpContent,
-    PoxPacketContent.CONNECTION_DOWN: ConnectionDownContent,
+SwitchPacketContent.DESERIALIZER = {
+    SwitchPacketContent.PACKET_IN: PacketInContent,
+    SwitchPacketContent.CONNECTION_UP: ConnectionUpContent,
+    SwitchPacketContent.CONNECTION_DOWN: ConnectionDownContent,
+}
+
+ApiPacketContent.DESERIALIZER = {
+    ApiPacketContent.PACKET_OUT: PacketOutContent,
+    ApiPacketContent.FLOW_MOD: FlowModContent,
 }

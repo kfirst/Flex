@@ -8,6 +8,7 @@ from pox.core import core as pox_core
 from flex.core import core as flex_core
 from flex.model.packet import *
 import pox.openflow.libopenflow_01 as of
+from flex.model.action import Action
 
 
 class ControlHandler(object):
@@ -51,54 +52,60 @@ class ConnectionUpHandler(ControlHandler):
 
     def __init__(self):
         super(ConnectionUpHandler, self).__init__()
+        self._content = ConnectionUpContent(None)
 
     def _handle_ConnectionUp(self, event):
         connection = event.connection
         switch_id = self._switch_id(event.dpid)
         self._connection_pool[switch_id] = connection
-        content = ConnectionUpContent(Switch.deserialize(switch_id))
-        self._create_and_send_packet(content)
+        self._content.src = Switch.deserialize(switch_id)
+        self._create_and_send_packet(self._content)
 
 
 class ConnectionDownHandler(ControlHandler):
 
     def __init__(self):
         super(ConnectionDownHandler, self).__init__()
+        self._content = ConnectionDownContent(None)
 
     def _handle_ConnectionDown(self, event):
         switch_id = self._switch_id(event.dpid)
         del self._connection_pool[switch_id]
-        content = ConnectionDownContent(Switch.deserialize(switch_id))
-        self._create_and_send_packet(content)
+        self._content.src = Switch.deserialize(switch_id)
+        self._create_and_send_packet(self._content)
 
 
 class PacketInHandler(ControlHandler):
 
     def __init__(self):
         super(PacketInHandler, self).__init__()
+        self._content = PacketInContent(None)
 
     def _handle_PacketIn(self, event):
         switch_id = self._switch_id(event.dpid)
-        switch = Switch.deserialize(switch_id)
-#        port = event.port
-#        data = event.data
-#        buffer_id = event.ofp.buffer_id
-        content = PacketInContent(switch, event.ofp)
-        self._create_and_send_packet(content)
+        self._content.src = Switch.deserialize(switch_id)
+        self._content.buffer_id = event.ofp.buffer_id
+        self._content.port = event.port
+        self._content.data = event.data
+        self._create_and_send_packet(self._content)
 
 
 class PacketOutHandler(ControlHandler):
 
     def __init__(self):
         super(PacketOutHandler, self).__init__()
+        self._msg = of.ofp_packet_out()
 
     def handle(self, content):
-        msg = of.ofp_packet_out()
+        msg = self._msg
         msg.buffer_id = content.buffer_id
+        if msg.buffer_id is None:
+            msg.data = content.data
+        else:
+            msg.data = b''
         msg.in_port = content.port
-        msg.actions = content.actions
-        msg.data = content.data
-        switch = self._get_switch(content.dst)
+        msg.actions = [ActionHandler.HANDLER[action.type](action) for action in content.actions]
+        switch = self._get_connection(content.dst)
         switch.send(msg)
 
 
@@ -106,14 +113,28 @@ class FLowModHandler(ControlHandler):
 
     def __init__(self):
         super(FLowModHandler, self).__init__()
+        self._msg = of.ofp_flow_mod()
 
     def handle(self, content):
-        msg = of.ofp_flow_mod()
+        msg = self._msg
         msg.match = content.match
         msg.idle_timeout = content.idle_timeout
         msg.hard_timeout = content.hard_timeout
         msg.buffer_id = content.buffer_id
         msg.actions = content.actions
         msg.data = content.data
-        switch = self._get_switch(content.dst)
+        switch = self._get_connection(content.dst)
         switch.send(msg)
+
+
+class ActionHandler(object):
+
+    HANDLER = None
+
+    @classmethod
+    def output(cls, action):
+        return of.ofp_action_output(port = action.port)
+
+ActionHandler.HANDLER = {
+    Action.OUTPUT: ActionHandler.output,
+}

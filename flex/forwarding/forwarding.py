@@ -45,14 +45,15 @@ class Forwarding(Module):
         dst = packet.dst
         if not dst or dst.get_id() == self._myself.get_id():
             return self._dispatch(packet)
+        address = core.routing.get_address(dst)
+        if address == self._myself.get_address():
+            return self._dispatch(packet)
+        if address:
+            logger.debug('Sending Packet to %s (address: %s), %s' % (dst, address, packet))
+            data = self._transformer.packet_to_data(packet)
+            return core.network.send(address, data)
         else:
-            address = core.routing.get_address(dst)
-            if address:
-                logger.debug('Sending Packet to %s, %s' % (dst, packet))
-                data = self._transformer.packet_to_data(packet)
-                return core.network.send(address, data)
-            else:
-                logger.warning('Can not find address for %s' % (dst))
+            logger.warning('Can not find address for %s' % (dst))
 
     def _dispatch(self, packet):
         '''

@@ -35,7 +35,7 @@ class Connection(object):
             server.setblocking(False)
             return cls(server, address, Connection.SERVER)
         except Exception, e:
-            raise ConnectFailException('Can not start server at ' + str(address) + ', because of ' + str(e))
+            raise ConnectFailException('Can not start server at %s, because of %s' % (address, e))
 
 
     def __init__(self, sock, address, connection_type):

@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with POX.  If not, see <http://www.gnu.org/licenses/>.
 
-from flex.core import core
-from flex.lib.util import str_to_bool
-from flex.api import messages, structures
+from flex.lib.util import str_to_bool, parse_packet
 from flex.base.module import Module
 import time
+from flex.core import core
 
 """
 An L2 learning switch.
@@ -82,29 +81,35 @@ class LearningSwitch (object):
         self.connection = connection
         self.transparent = transparent
 
+        self.switch = core.api.switch_api
+        self.listen = core.api.listen_api
+        self.message = core.api.message_api
+        self.action = core.api.action_api
+        self.port = core.api.port_api
+        self.match = core.api.match_api
+
         # Our table
         self.macToPort = {}
 
         # We want to hear PacketIn messages, so we listen
         # to the connection
-        connection.add_listeners(self)
+        self.listen.add_listeners(self, connection)
 
         # We just use this to know when to log a helpful message
         self.hold_down_expired = _flood_delay == 0
 
-        # log.debug("Initializing LearningSwitch, transparent=%s",
-        #          str(self.transparent))
+        logger.debug('Initializing LearningSwitch')
 
     def _handle_PacketIn(self, event):
         """
         Handle packet in messages from the switch to implement above algorithm.
         """
-        packet = event.parsed
+        packet = parse_packet(event.data)
 
         def flood (message = None):
             """ Floods the packet """
-            msg = messages.PacketOutMessage()
-            if time.time() - self.connection.connect_time >= _flood_delay:
+            msg = self.message.packet_out_message()
+            if time.time() - self.switch.get_connect_time(self.connection) >= _flood_delay:
                 # Only flood if we've been connected for a little while...
                 if self.hold_down_expired is False:
                     # Oh yes it is!
@@ -115,13 +120,15 @@ class LearningSwitch (object):
                 # log.debug("%i: flood %s -> %s", event.dpid,packet.src,packet.dst)
                 # OFPP_FLOOD is optional; on some switches you may need to change
                 # this to OFPP_ALL.
-                msg.actions.append(structures.OutputAction(port = structures.Port.flood()))
+                action = self.action.output_action(self.port.flood_port())
+                msg.actions.append(action)
             else:
                 pass
-            logger.info("Holding down flood for %s", str(event.switch))
-            msg.data = event.ofp
+            logger.info("Holding down flood for %s", str(event.src))
+            msg.buffer_id = event.buffer_id
             msg.port = event.port
-            self.connection.send(msg)
+            msg.data = event.data
+            self.switch.send_to(self.connection, msg)
 
         def drop (duration = None):
             """
@@ -131,17 +138,17 @@ class LearningSwitch (object):
             if duration is not None:
                 if not isinstance(duration, tuple):
                     duration = (duration, duration)
-                msg = messages.FlowModMessage()
-                msg.match = structures.Match.from_packet(packet)
+                msg = self.message.flow_mod_message()
+                msg.match = self.match.data_match(event.data)
                 msg.idle_timeout = duration[0]
                 msg.hard_timeout = duration[1]
                 msg.buffer_id = event.buffer_id
-                self.connection.send(msg)
-            elif event.ofp.buffer_id is not None:
-                msg = messages.PacketOutMessage()
+                self.switch.send_to(self.connection, msg)
+            elif event.buffer_id is not None:
+                msg = self.message.packet_out_message()
                 msg.buffer_id = event.buffer_id
                 msg.port = event.port
-                self.connection.send(msg)
+                self.switch.send_to(self.connection, msg)
 
         self.macToPort[packet.src] = event.port  # 1
 
@@ -166,13 +173,13 @@ class LearningSwitch (object):
                 # 6
                 logger.debug("installing flow for %s.%i -> %s.%i" %
                           (packet.src, event.port, packet.dst, port))
-                msg = messages.FlowModMessage()
-                msg.match = structures.Match.from_packet(packet, event.port)
+                msg = self.message.flow_mod_message()
+                msg.match = self.match.data_match(event.data, event.port)
                 msg.idle_timeout = 10
                 msg.hard_timeout = 30
-                msg.actions.append(structures.OutputAction(port = port))
-                msg.data = event.ofp  # 6a
-                self.connection.send(msg)
+                msg.actions.append(self.action.output_action(port = port))
+                # msg.data = event.ofp  # 6a
+                self.switch.send_to(self.connection, msg)
 
 
 class l2_learning (Module):
@@ -183,11 +190,11 @@ class l2_learning (Module):
         self.transparent = transparent
 
     def start(self):
-        core.api.all_switches.add_listeners(self)
+        core.api.listen_api.add_listeners(self)
 
-    def _handle_ConnectionUp(self, event):
-        logger.debug("Connection %s" % event.src)
-        LearningSwitch(event.src, self.transparent)
+    def _handle_ConnectionUp(self, content):
+        logger.debug("Switch %s connected" % content.src)
+        LearningSwitch(content.src, self.transparent)
 
 
 def launch():
@@ -204,3 +211,4 @@ def launch():
     except:
         raise RuntimeError("Expected hold-down to be a number")
     core.register_component(l2_learning, str_to_bool(transparent))
+

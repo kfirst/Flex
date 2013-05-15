@@ -31,11 +31,18 @@ class RedisStorage(Module, PacketHandler):
         self._packet.src = self._myself
         self._key_handlers = {}
         self._domain_handlers = {}
-        self._keys_need_notify = Queue.Queue()
+        self._task_queue = Queue.Queue()
         self._pool = redis.ConnectionPool()
         self._num = len(servers)
         self._redises = [self._create_redis(server, port, self._pool)
                 for server, port in servers]
+        self._processer = {
+                self.SET: self._set,
+                self.SADD: self._sadd,
+                self.SADD_MULTI: self._sadd_multi,
+                self.SREMOVE: self._sremove,
+                self.DELETE: self._delete,
+        }
 
     def start(self):
         core.forwarding.register_handler(Packet.STORAGE, self)
@@ -48,9 +55,9 @@ class RedisStorage(Module, PacketHandler):
         num = hash(key) % self._num
         return self._redises[num]
 
-    def _check_key(self, key):
-        if key.startswith('@') or key.startswith('#'):
-            raise IllegalKeyException('Key could NOT start with @, #')
+#    def _check_key(self, key):
+#        if key.startswith('@') or key.startswith('#'):
+#            raise IllegalKeyException('Key could NOT start with @, #')
 
     def _make_name(self, key, domain):
         return '%s:%s' % (domain, key)
@@ -59,6 +66,8 @@ class RedisStorage(Module, PacketHandler):
         return pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
 
     def _string_to_data(self, string):
+        if string is None:
+            return None
         return pickle.loads(string)
 
     def get(self, key, domain = 'default'):
@@ -67,18 +76,23 @@ class RedisStorage(Module, PacketHandler):
         return self._string_to_data(value)
 
     def set(self, key, value, domain = 'default'):
-        self._check_key(key)
+        self._task_queue.put((key, value, domain, self.SET))
+
+    def _set(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.set(name, self._data_to_string(value))
-        self._keys_need_notify.put((key, value, domain, self.SET))
+        self._notify(key, value, domain, self.SET)
         return ret
 
     def delete(self, key, domain = 'default'):
+        self._task_queue.put((key, None, domain, self.DELETE))
+
+    def _delete(self, key, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.delete(name)
-        self._keys_need_notify.put((key, None, domain, self.DELETE))
+        self._notify(key, None, domain, self.DELETE)
         return ret
 
     def sget(self, key, domain = 'default'):
@@ -86,41 +100,41 @@ class RedisStorage(Module, PacketHandler):
         return self._get_redis(name).smembers(name)
 
     def sadd(self, key, value, domain = 'default'):
-        self._check_key(key)
+        self._task_queue.put((key, value, domain, self.SADD))
+
+    def _sadd(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.sadd(name, value)
-        self._keys_need_notify.put((key, value, domain, self.SADD))
+        self._notify(key, value, domain, self.SADD)
         return ret
 
     def sremove(self, key, value, domain = 'default'):
+        self._task_queue.put((key, value, domain, self.SREMOVE))
+
+    def _sremove(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.srem(name, value)
-        self._keys_need_notify.put((key, value, domain, self.SREMOVE))
+        self._notify(key, value, domain, self.SREMOVE)
         return ret
 
     def sadd_multi(self, key, values, domain = 'default'):
-        self._check_key(key)
+        self._task_queue.put((key, values, domain, self.SADD_MULTI))
+
+    def _sadd_multi(self, key, values, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         pipe = redis.pipeline()
         for value in values:
             pipe.sadd(name, value)
         ret = pipe.execute()
-        self._keys_need_notify.put((key, values, domain, self.SADD_MULTI))
+        self._notify(key, values, domain, self.SADD_MULTI)
         return ret
 
-    def _start_thread(self):
-        thread = threading.Thread(target = self._schedule)
-        thread.setDaemon(True)
-        thread.start()
-
-    def _schedule(self):
-        while 1:
-            key, value, domain, type = self._keys_need_notify.get()
-            self._notify_domain(key, value, domain, type)
-            self._notify_key(key, value, domain, type)
+    def _notify(self, key, value, domain, type):
+        self._notify_domain(key, value, domain, type)
+        self._notify_key(key, value, domain, type)
 
     def _notify_domain(self, key, value, domain, type):
         listeners = self._get_redis(domain).smembers('#' + domain)
@@ -148,6 +162,16 @@ class RedisStorage(Module, PacketHandler):
         packet.content.domain = domain
         packet.content.type = type
         core.forwarding.forward(self._packet)
+
+    def _start_thread(self):
+        thread = threading.Thread(target = self._schedule)
+        thread.setDaemon(True)
+        thread.start()
+
+    def _schedule(self):
+        while 1:
+            key, value, domain, type = self._task_queue.get()
+            self._processer[type](key, value, domain)
 
     def listen_key(self, storage_handler, key, domain = 'default', listen_myself = False):
         name = self._make_name(key, domain)

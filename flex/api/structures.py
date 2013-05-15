@@ -6,16 +6,20 @@ Created on 2013-4-22
 
 from flex.core import core
 from flex.model.packet import Packet
-import pox.openflow.libopenflow_01 as of
 from flex.lib.util import object_to_string
 
 logger = core.get_logger()
 
+
 class BaseSwitch(object):
 
-    def __init__(self, api, switch):
-        self._api = api
+    _api = None
+
+    def __init__(self, switch):
         self._switch = switch
+
+    def add_listeners(self, obj):
+        self._api._add_hanlders(obj, self._switch)
 
     def __repr__(self):
         return object_to_string(self,
@@ -24,24 +28,29 @@ class BaseSwitch(object):
 
 class AllSwitches(BaseSwitch):
 
-    def __init__(self, api):
-        super(AllSwitches, self).__init__(api, None)
-
-    def add_listeners(self, obj):
-        self._api._add_hanlders(obj, self._switch)
+    def __init__(self):
+        super(AllSwitches, self).__init__(None)
 
 
 class Switch(BaseSwitch):
 
-    def __init__(self, api, switch):
-        super(Switch, self).__init__(api, switch)
+    _switches = {}
 
-    def add_listeners(self, obj):
-        self._api._add_hanlders(obj, set([self._switch]))
+    def __init__(self, switch):
+        super(Switch, self).__init__(switch)
+
+    @classmethod
+    def get_switch(cls, switch):
+        try:
+            ret = cls._switches[switch]
+        except KeyError:
+            ret = cls(switch)
+            cls._switches[switch] = ret
+        return ret
 
     @property
     def connect_time(self):
-        return core.topology.connect_time(self._switch)
+        return core.routing.get_connect_time(self._switch)
 
     def send(self, message):
         content = message.to_content(self._switch)
@@ -51,16 +60,24 @@ class Switch(BaseSwitch):
 
 class Port(object):
 
-    @staticmethod
-    def flood():
-        return of.OFPP_FLOOD
+    FLOOD = 1
 
 
-class OutputAction(of.ofp_action_output):
+class OutputAction(object):
 
-    def __init__ (self, **kw):
-        super(OutputAction, self).__init__(**kw)
+    def __init__ (self):
+        self.port = None
 
 
-class Match(of.ofp_match):
-    pass
+class Match(object):
+
+    def __init__(self):
+        self.data = None
+        self.port = None
+
+    @classmethod
+    def from_data(cls, data, port = None):
+        match = cls()
+        match.data = data
+        match.port = port
+        return match

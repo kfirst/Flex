@@ -4,7 +4,7 @@ Created on 2013-4-9
 @author: kfirst
 '''
 from flex.base.handler import PacketHandler
-from flex.model.packet import PoxPacketContent as Pox
+from flex.model.packet import SwitchPacketContent as Pox
 from flex.model.packet import ApiPacketContent as Api
 from flex.pox.handlers import *
 from flex.core import core
@@ -23,6 +23,7 @@ class ConcernManager(PacketHandler):
         self._handlers = {}
 
     def add(self, control_type, switch):
+        control_type = int(control_type)
         try:
             handler = self._handlers[control_type]
         except KeyError:
@@ -47,7 +48,6 @@ class ProcesserManager(PacketHandler):
 
     def __init__(self):
         self._handlers = {}
-        core.forwarding.register_handler(Packet.CONTROL_FROM_API, self)
 
     def process(self, api_content):
         control_type = api_content.type

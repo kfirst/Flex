@@ -10,16 +10,16 @@ class SelectionAlgorithms(object):
 
     @classmethod
     def shortest_path(self, controllers):
-        ret = []
+        if len(controllers) < 2:
+            return controllers
+        ret = None
         shorest = None
         for controller in controllers:
             distance = core.routing.get_distance(controller)
             if shorest == None or distance < shorest:
                 shorest = distance
-                ret = [controller]
-            elif distance == shorest:
-                ret.append(controller)
-        return ret
+                ret = controller
+        return [ret]
 
     @classmethod
     def first(self, controllers):

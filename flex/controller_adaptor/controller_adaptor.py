@@ -5,21 +5,21 @@ Created on 2013-5-12
 '''
 
 from flex.base.module import Module
-from flex.base.handler import PacketHandler, StorageHandler
+from flex.base.handler import PacketHandler, StorageHandler, EventHandler
 from flex.core import core
-from flex.model.packet import Packet, PoxPacketContent
-from flex.api.api import Api
+from flex.model.packet import Packet, SwitchPacketContent
 from flex.model.device import Device
 from flex.controller_adaptor.selection_algorithms import SelectionAlgorithms
-from flex.routing.routing import Routing
+from flex.base import event
 
 logger = core.get_logger()
 
 
-class ControllerAdaptor(Module, PacketHandler, StorageHandler):
+class ControllerAdaptor(Module, PacketHandler, StorageHandler, EventHandler):
 
-    LOCAL_CONCERN = Api.LOCAL_CONCERN
-    GLOBAL_CONCERN = Api.GLOBAL_CONCERN
+    LOCAL_CONCERN = 'local_concern'
+    GLOBAL_CONCERN = 'global_concern'
+    GLOBAL_CONCERN_CONTROLLERS = 'global_concern_controllers'
 
     def __init__(self, app_name, algorithms):
         self._myself = core.myself.get_self_controller()
@@ -38,7 +38,22 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler):
     def start(self):
         self._app = getattr(core, self._app_name)
         core.forwarding.register_handler(Packet.CONTROL_FROM_API, self)
+        core.event.register_handler(event.FlexUpEvent, self)
         core.globalStorage.listen_domain(self, self.GLOBAL_CONCERN, True)
+
+    def handle_event(self, event):
+        controllers = core.globalStorage.sget(self.GLOBAL_CONCERN_CONTROLLERS,
+                            self.GLOBAL_CONCERN_CONTROLLERS)
+        for controller in controllers:
+            concerns = core.globalStorage.sget(controller, self.GLOBAL_CONCERN)
+            controller = Device.deserialize(controller)
+            for concern in concerns:
+                concern = int(concern)
+                try:
+                    self._global_controllers[concern].add(controller)
+                except KeyError:
+                    self._global_controllers[concern] = set([controller])
+                self._app.register(concern)
 
     def handle_packet(self, packet):
         self._app.process(packet.content)
@@ -68,21 +83,24 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler):
                 self._app.register(concern_type, switch)
 
     def forward(self, pox_content):
+        self._handle_pox_content(pox_content)
         controllers = self._get_controllers(pox_content.type, pox_content.src)
         for algorithm, parameter in self._algorithms:
             controllers = algorithm(controllers, *parameter)
-        self._handle_pox_content(pox_content)
+        self._send_packet(pox_content, controllers)
+
+    def _handle_pox_content(self, pox_content):
+        if pox_content.type != SwitchPacketContent.CONNECTION_UP:
+            return
+        switch_id = pox_content.src.get_id()
+        core.globalStorage.listen_domain(self, '%s:%s' % (self.LOCAL_CONCERN, switch_id), True)
+        core.routing.connected(pox_content.src, self._myself.get_address())
+
+    def _send_packet(self, pox_content, controllers):
         self._packet.content = pox_content
         for controller in controllers:
             self._packet.dst = controller
             core.forwarding.forward(self._packet)
-
-    def _handle_pox_content(self, pox_content):
-        if pox_content.type != PoxPacketContent.CONNECTION_UP:
-            return
-        switch_id = pox_content.src.get_id()
-        core.globalStorage.listen_domain(self, '%s:%s' % (self.LOCAL_CONCERN, switch_id), True)
-        core.globalStorage.set(switch_id, self._myself.get_address(), Routing.ROUTING)
 
     def _get_controllers(self, type, switch):
         controllers = set()
