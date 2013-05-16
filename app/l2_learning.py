@@ -92,7 +92,7 @@ class LearningSwitch(StorageHandler):
         # Our table
         self.macToPort = {}
         self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
-        core.appStorage.listen_domain(self, self.L2_LEARN)
+#        core.appStorage.listen_domain(self, self.L2_LEARN)
 
         # We want to hear PacketIn messages, so we listen
         # to the connection
@@ -164,7 +164,7 @@ class LearningSwitch(StorageHandler):
                 self.switch.send_to(self.connection, msg)
 
         self.macToPort[packet.src] = event.port  # 1
-        self._add_port(packet.src, event.port)
+#        self._add_port(packet.src, event.port)
 
         if not self.transparent:  # 2
             if packet.type == packet.LLDP_TYPE or packet.dst.isBridgeFiltered():
@@ -183,7 +183,7 @@ class LearningSwitch(StorageHandler):
                 if port == event.port:  # 5
                     # 5a
                     logger.warning("Same port for packet from %s -> %s on %s.%s.  Drop."
-                                % (packet.src, packet.dst, event.switch, port))
+                                % (packet.src, packet.dst, event.src, port))
                     drop(10)
                     return
                 # 6

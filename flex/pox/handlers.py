@@ -52,52 +52,48 @@ class ConnectionUpHandler(ControlHandler):
 
     def __init__(self):
         super(ConnectionUpHandler, self).__init__()
-        self._content = ConnectionUpContent(None)
 
     def _handle_ConnectionUp(self, event):
         connection = event.connection
         switch_id = self._switch_id(event.dpid)
         self._connection_pool[switch_id] = connection
-        self._content.src = Switch.deserialize(switch_id)
-        self._create_and_send_packet(self._content)
+        content = ConnectionUpContent(Switch.deserialize(switch_id))
+        self._create_and_send_packet(content)
 
 
 class ConnectionDownHandler(ControlHandler):
 
     def __init__(self):
         super(ConnectionDownHandler, self).__init__()
-        self._content = ConnectionDownContent(None)
 
     def _handle_ConnectionDown(self, event):
         switch_id = self._switch_id(event.dpid)
         del self._connection_pool[switch_id]
-        self._content.src = Switch.deserialize(switch_id)
-        self._create_and_send_packet(self._content)
+        content = ConnectionDownContent(Switch.deserialize(switch_id))
+        self._create_and_send_packet(content)
 
 
 class PacketInHandler(ControlHandler):
 
     def __init__(self):
         super(PacketInHandler, self).__init__()
-        self._content = PacketInContent(None)
 
     def _handle_PacketIn(self, event):
         switch_id = self._switch_id(event.dpid)
-        self._content.src = Switch.deserialize(switch_id)
-        self._content.buffer_id = event.ofp.buffer_id
-        self._content.port = event.port
-        self._content.data = event.data
-        self._create_and_send_packet(self._content)
+        content = PacketInContent(Switch.deserialize(switch_id))
+        content.buffer_id = event.ofp.buffer_id
+        content.port = event.port
+        content.data = event.data
+        self._create_and_send_packet(content)
 
 
 class PacketOutHandler(ControlHandler):
 
     def __init__(self):
         super(PacketOutHandler, self).__init__()
-        self._msg = of.ofp_packet_out()
 
     def handle(self, content):
-        msg = self._msg
+        msg = of.ofp_packet_out()
         msg.buffer_id = content.buffer_id
         if msg.buffer_id is None:
             msg.data = content.data
@@ -113,10 +109,9 @@ class FLowModHandler(ControlHandler):
 
     def __init__(self):
         super(FLowModHandler, self).__init__()
-        self._msg = of.ofp_flow_mod()
 
     def handle(self, content):
-        msg = self._msg
+        msg = of.ofp_flow_mod()
         msg.match = content.match
         msg.idle_timeout = content.idle_timeout
         msg.hard_timeout = content.hard_timeout

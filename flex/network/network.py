@@ -163,8 +163,11 @@ class ClientHandler(ConnectionHandler):
                 self._current_to_send += ''.join(send_buffer)
             if self._current_to_send:
                 writen = self._connection.send(self._current_to_send)
-                self._current_to_send = self._current_to_send[writen:]
-            else:
+                if writen == -1:
+                    self._network._remove_connection(self._connection)
+                else:
+                    self._current_to_send = self._current_to_send[writen:]
+            if not self._current_to_send and not self._send_buffer:
                 self._network._modify_mask(self._connection, select.EPOLLIN)
 
     def send(self, data):

@@ -30,13 +30,13 @@ class RedisStorage(Storage, PacketHandler):
         self._num = len(servers)
         self._redises = [self._create_redis(server, port, self._pool)
                 for server, port in servers]
-#        self._processer = {
-#                self.SET: self._set,
-#                self.SADD: self._sadd,
-#                self.SADD_MULTI: self._sadd_multi,
-#                self.SREMOVE: self._sremove,
-#                self.DELETE: self._delete,
-#        }
+        self._processer = {
+                self.SET: self._set,
+                self.SADD: self._sadd,
+                self.SADD_MULTI: self._sadd_multi,
+                self.SREMOVE: self._sremove,
+                self.DELETE: self._delete,
+        }
 
     def start(self):
         core.forwarding.register_handler(Packet.STORAGE, self)
@@ -70,9 +70,9 @@ class RedisStorage(Storage, PacketHandler):
         return self._string_to_data(value)
 
     def set(self, key, value, domain = 'default'):
-#        self._task_queue.put((key, value, domain, self.SET))
-#
-#    def _set(self, key, value, domain):
+        self._task_queue.put((key, value, domain, self.SET))
+
+    def _set(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.set(name, self._data_to_string(value))
@@ -80,9 +80,9 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def delete(self, key, domain = 'default'):
-#        self._task_queue.put((key, None, domain, self.DELETE))
-#
-#    def _delete(self, key, domain):
+        self._task_queue.put((key, None, domain, self.DELETE))
+
+    def _delete(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.delete(name)
@@ -95,9 +95,9 @@ class RedisStorage(Storage, PacketHandler):
         return set([self._string_to_data(value) for value in values])
 
     def sadd(self, key, value, domain = 'default'):
-#        self._task_queue.put((key, value, domain, self.SADD))
-#
-#    def _sadd(self, key, value, domain):
+        self._task_queue.put((key, value, domain, self.SADD))
+
+    def _sadd(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.sadd(name, self._data_to_string(value))
@@ -105,9 +105,9 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def sremove(self, key, value, domain = 'default'):
-#        self._task_queue.put((key, value, domain, self.SREMOVE))
-#
-#    def _sremove(self, key, value, domain):
+        self._task_queue.put((key, value, domain, self.SREMOVE))
+
+    def _sremove(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.srem(name, self._data_to_string(value))
@@ -115,9 +115,9 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def sadd_multi(self, key, values, domain = 'default'):
-#        self._task_queue.put((key, values, domain, self.SADD_MULTI))
-#
-#    def _sadd_multi(self, key, values, domain):
+        self._task_queue.put((key, values, domain, self.SADD_MULTI))
+
+    def _sadd_multi(self, key, values, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         pipe = redis.pipeline()
@@ -128,7 +128,9 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def _notify(self, key, value, domain, type):
-        self._task_queue.put((key, value, domain, type))
+#        self._task_queue.put((key, value, domain, type))
+        self._notify_domain(key, value, domain, type)
+        self._notify_key(key, value, domain, type)
 
     def _notify_domain(self, key, value, domain, type):
         listeners = self._get_redis(domain).smembers('#' + domain)
@@ -165,8 +167,9 @@ class RedisStorage(Storage, PacketHandler):
     def _schedule(self):
         while 1:
             key, value, domain, type = self._task_queue.get()
-            self._notify_domain(key, value, domain, type)
-            self._notify_key(key, value, domain, type)
+            self._processer[type](key, value, domain)
+#            self._notify_domain(key, value, domain, type)
+#            self._notify_key(key, value, domain, type)
 
     def listen_key(self, storage_handler, key, domain = 'default', listen_myself = False):
         name = self._make_name(key, domain)
