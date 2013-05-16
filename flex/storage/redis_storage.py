@@ -26,9 +26,8 @@ class RedisStorage(Storage, PacketHandler):
         self._key_handlers = {}
         self._domain_handlers = {}
         self._task_queue = Queue.Queue()
-        self._pool = redis.ConnectionPool()
         self._num = len(servers)
-        self._redises = [self._create_redis(server, port, self._pool)
+        self._redises = [redis.Redis(host = server, port = port)
                 for server, port in servers]
         self._processer = {
                 self.SET: self._set,
@@ -41,9 +40,6 @@ class RedisStorage(Storage, PacketHandler):
     def start(self):
         core.forwarding.register_handler(Packet.STORAGE, self)
         self._start_thread()
-
-    def _create_redis(self, server, port, pool):
-        return redis.Redis(host = server, port = port, connection_pool = pool)
 
     def _get_redis(self, key):
         num = hash(key) % self._num
