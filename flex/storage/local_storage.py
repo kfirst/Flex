@@ -5,15 +5,10 @@ Created on 2013-5-13
 '''
 
 from flex.base.module import Module
+from flex.storage.storage import Storage
 
 
-class LocalStorage(Module):
-
-    SET = 1
-    SADD = 2
-    SADD_MULTI = 3
-    SREMOVE = 4
-    DELETE = 5
+class LocalStorage(Storage):
 
     def __init__(self):
         self._values = {}

@@ -19,6 +19,7 @@ from flex.lib.util import str_to_bool, parse_packet
 from flex.base.module import Module
 import time
 from flex.core import core
+from flex.base.handler import StorageHandler
 
 """
 An L2 learning switch.
@@ -34,7 +35,7 @@ logger = core.get_logger()
 # Can be overriden on commandline.
 _flood_delay = 0
 
-class LearningSwitch (object):
+class LearningSwitch(StorageHandler):
     """
     The learning switch "brain" associated with a single OpenFlow switch.
     
@@ -90,6 +91,8 @@ class LearningSwitch (object):
 
         # Our table
         self.macToPort = {}
+        self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
+        core.appStorage.listen_domain(self, self.L2_LEARN)
 
         # We want to hear PacketIn messages, so we listen
         # to the connection
@@ -98,7 +101,17 @@ class LearningSwitch (object):
         # We just use this to know when to log a helpful message
         self.hold_down_expired = _flood_delay == 0
 
-        logger.debug('Initializing LearningSwitch')
+#        logger.debug('Initializing LearningSwitch')
+
+    def handle_storage(self, key, value, domain, type):
+        self.macToPort[key] = value
+
+    def _add_port(self, mac, port):
+        core.appStorage.set(mac, port, self.L2_LEARN)
+
+    def _get_port(self, mac):
+        core.appStorage.get(mac, self.L2_LEARN)
+
 
     def _handle_PacketIn(self, event):
         """
@@ -151,6 +164,7 @@ class LearningSwitch (object):
                 self.switch.send_to(self.connection, msg)
 
         self.macToPort[packet.src] = event.port  # 1
+        self._add_port(packet.src, event.port)
 
         if not self.transparent:  # 2
             if packet.type == packet.LLDP_TYPE or packet.dst.isBridgeFiltered():
@@ -160,7 +174,9 @@ class LearningSwitch (object):
         if packet.dst.is_multicast:
             flood()  # 3a
         else:
+#            port = self._get_port(packet.dst)
             if packet.dst not in self.macToPort:  # 4
+#            if port is None:
                 flood("Port for %s unknown -- flooding" % (packet.dst,))  # 4a
             else:
                 port = self.macToPort[packet.dst]
@@ -171,8 +187,8 @@ class LearningSwitch (object):
                     drop(10)
                     return
                 # 6
-                logger.debug("installing flow for %s.%i -> %s.%i" %
-                          (packet.src, event.port, packet.dst, port))
+#                logger.debug("installing flow for %s.%i -> %s.%i" %
+#                          (packet.src, event.port, packet.dst, port))
                 msg = self.message.flow_mod_message()
                 msg.match = self.match.data_match(event.data, event.port)
                 msg.idle_timeout = 10
@@ -193,7 +209,7 @@ class l2_learning (Module):
         core.api.listen_api.add_listeners(self)
 
     def _handle_ConnectionUp(self, content):
-        logger.debug("Switch %s connected" % content.src)
+#        logger.debug("Switch %s connected" % content.src)
         LearningSwitch(content.src, self.transparent)
 
 

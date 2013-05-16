@@ -48,7 +48,6 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler, EventHandler):
             concerns = core.globalStorage.sget(controller, self.GLOBAL_CONCERN)
             controller = Device.deserialize(controller)
             for concern in concerns:
-                concern = int(concern)
                 try:
                     self._global_controllers[concern].add(controller)
                 except KeyError:

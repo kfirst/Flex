@@ -3,9 +3,15 @@ from flex.storage.local_storage import LocalStorage
 from flex.storage.redis_storage import RedisStorage
 
 def launch():
-    storages = core.config.get('module.storage')
-    for name, parameters in storages.items():
+    storages_config = core.config.get('module.storage')
+    redis = None
+    local = None
+    for name, parameters in storages_config.items():
         if parameters:
-            core.register_object(name, RedisStorage(**parameters))
+            if redis is None:
+                redis = RedisStorage(**parameters)
+            core.register_object(name, redis)
         else:
-            core.register_object(name, LocalStorage())
+            if local is None:
+                local = LocalStorage()
+            core.register_object(name, local)

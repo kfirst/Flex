@@ -6,24 +6,18 @@ Created on 2013-5-12
 
 import redis
 from flex.base.module import Module
-from flex.base.exception import IllegalKeyException
 from flex.core import core
 from flex.model.device import Device
 from flex.model.packet import Packet, StoragePacketContent
 from flex.base.handler import PacketHandler
 import threading, Queue
-import pickle
+import cPickle
+from flex.storage.storage import Storage
 
 logger = core.get_logger()
 
 
-class RedisStorage(Module, PacketHandler):
-
-    SET = 1
-    SADD = 2
-    SADD_MULTI = 3
-    SREMOVE = 4
-    DELETE = 5
+class RedisStorage(Storage, PacketHandler):
 
     def __init__(self, servers):
         self._myself = core.myself.get_self_controller()
@@ -36,13 +30,13 @@ class RedisStorage(Module, PacketHandler):
         self._num = len(servers)
         self._redises = [self._create_redis(server, port, self._pool)
                 for server, port in servers]
-        self._processer = {
-                self.SET: self._set,
-                self.SADD: self._sadd,
-                self.SADD_MULTI: self._sadd_multi,
-                self.SREMOVE: self._sremove,
-                self.DELETE: self._delete,
-        }
+#        self._processer = {
+#                self.SET: self._set,
+#                self.SADD: self._sadd,
+#                self.SADD_MULTI: self._sadd_multi,
+#                self.SREMOVE: self._sremove,
+#                self.DELETE: self._delete,
+#        }
 
     def start(self):
         core.forwarding.register_handler(Packet.STORAGE, self)
@@ -63,12 +57,12 @@ class RedisStorage(Module, PacketHandler):
         return '%s:%s' % (domain, key)
 
     def _data_to_string(self, data):
-        return pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        return cPickle.dumps(data, cPickle.HIGHEST_PROTOCOL)
 
     def _string_to_data(self, string):
         if string is None:
             return None
-        return pickle.loads(string)
+        return cPickle.loads(string)
 
     def get(self, key, domain = 'default'):
         name = self._make_name(key, domain)
@@ -76,9 +70,9 @@ class RedisStorage(Module, PacketHandler):
         return self._string_to_data(value)
 
     def set(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SET))
-
-    def _set(self, key, value, domain):
+#        self._task_queue.put((key, value, domain, self.SET))
+#
+#    def _set(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.set(name, self._data_to_string(value))
@@ -86,9 +80,9 @@ class RedisStorage(Module, PacketHandler):
         return ret
 
     def delete(self, key, domain = 'default'):
-        self._task_queue.put((key, None, domain, self.DELETE))
-
-    def _delete(self, key, domain):
+#        self._task_queue.put((key, None, domain, self.DELETE))
+#
+#    def _delete(self, key, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         ret = redis.delete(name)
@@ -97,44 +91,44 @@ class RedisStorage(Module, PacketHandler):
 
     def sget(self, key, domain = 'default'):
         name = self._make_name(key, domain)
-        return self._get_redis(name).smembers(name)
+        values = self._get_redis(name).smembers(name)
+        return set([self._string_to_data(value) for value in values])
 
     def sadd(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SADD))
-
-    def _sadd(self, key, value, domain):
+#        self._task_queue.put((key, value, domain, self.SADD))
+#
+#    def _sadd(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
-        ret = redis.sadd(name, value)
+        ret = redis.sadd(name, self._data_to_string(value))
         self._notify(key, value, domain, self.SADD)
         return ret
 
     def sremove(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SREMOVE))
-
-    def _sremove(self, key, value, domain):
+#        self._task_queue.put((key, value, domain, self.SREMOVE))
+#
+#    def _sremove(self, key, value, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
-        ret = redis.srem(name, value)
+        ret = redis.srem(name, self._data_to_string(value))
         self._notify(key, value, domain, self.SREMOVE)
         return ret
 
     def sadd_multi(self, key, values, domain = 'default'):
-        self._task_queue.put((key, values, domain, self.SADD_MULTI))
-
-    def _sadd_multi(self, key, values, domain):
+#        self._task_queue.put((key, values, domain, self.SADD_MULTI))
+#
+#    def _sadd_multi(self, key, values, domain):
         name = self._make_name(key, domain)
         redis = self._get_redis(name)
         pipe = redis.pipeline()
         for value in values:
-            pipe.sadd(name, value)
+            pipe.sadd(name, self._data_to_string(value))
         ret = pipe.execute()
         self._notify(key, values, domain, self.SADD_MULTI)
         return ret
 
     def _notify(self, key, value, domain, type):
-        self._notify_domain(key, value, domain, type)
-        self._notify_key(key, value, domain, type)
+        self._task_queue.put((key, value, domain, type))
 
     def _notify_domain(self, key, value, domain, type):
         listeners = self._get_redis(domain).smembers('#' + domain)
@@ -171,7 +165,8 @@ class RedisStorage(Module, PacketHandler):
     def _schedule(self):
         while 1:
             key, value, domain, type = self._task_queue.get()
-            self._processer[type](key, value, domain)
+            self._notify_domain(key, value, domain, type)
+            self._notify_key(key, value, domain, type)
 
     def listen_key(self, storage_handler, key, domain = 'default', listen_myself = False):
         name = self._make_name(key, domain)
@@ -195,7 +190,7 @@ class RedisStorage(Module, PacketHandler):
             redis.srem('#' + domain, self._data_to_string((self._myself.serialize(), True)))
 
     def handle_packet(self, packet):
-        logger.debug('Storage packet received')
+#        logger.debug('Storage packet received')
         key = packet.content.key
         value = packet.content.value
         domain = packet.content.domain

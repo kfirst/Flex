@@ -23,7 +23,6 @@ class ConcernManager(PacketHandler):
         self._handlers = {}
 
     def add(self, control_type, switch):
-        control_type = int(control_type)
         try:
             handler = self._handlers[control_type]
         except KeyError:

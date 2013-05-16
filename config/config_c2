@@ -4,17 +4,19 @@
 		"core": {
 			#core模块启动后需要载入的模块列表
 			"module": [
+				"flex.storage",
 				"flex.network",
+				"flex.neighbor_monitor",
+				"flex.routing",
 				"flex.forwarding",
-				"flex.topology",
-				"flex.control_packet_forwarding",
-				"flex.pox"
+				"flex.api",
+				"app.l2_learning"
 			]
 		},
 		#log模块的配置，包括记录的级别、格式和输出的方式等信息
 		"log": {
 			#级别
-			"level": "DEBUG",
+			"level": "WARNING",
 			#格式
 			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s](%(funcName)s): %(message)s",
 			#输出方式
@@ -26,16 +28,26 @@
 		"network": {
 			"backlog": 50
 		},
+		"storage": {
+			"globalStorage": {
+				"servers": [
+					["127.0.0.1", 6379]
+				]
+			},
+			"appStorage": {
+				"servers": [
+					["127.0.0.1", 6379]
+				]
+			}
+		},
 		"pox": {
 			"pox_command_line": "openflow.of_01 --port=10102",
 			"pox_path": "../POX"
 		},
-		#control_packet_forwarding模块的配置，主要功能是：
-		#从关心该类型报文的controlller中选出若干个，将报文转发给这些controller
-		"control_packet_forwarding": {
+		"controller_adaptor": {
+			"app": "pox",
 			"algorithms": {
-				"shortest_path": [],
-				"sample": [1]
+				"shortest_path": []
 			}
 		}
 	},
@@ -48,8 +60,8 @@
 			"c2": {
 				"address": ["127.0.0.1", 12202],
 				"neighbors": {
-					"c1": "peer",
-					"c3": "provider"
+					"c1": "customer",
+					"c3": "peer"
 				}
 			},
 			"c1": {

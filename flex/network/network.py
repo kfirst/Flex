@@ -146,9 +146,10 @@ class ClientHandler(ConnectionHandler):
             data = self._connection.recv()
             if data:
                 self._receive_buffer += data
+                length = len(data) + ClientHandler.EOL_LENGTH
                 try:
                     while 1:
-                        index = self._receive_buffer.index(ClientHandler.EOL, -len(data) - ClientHandler.EOL_LENGTH)
+                        index = self._receive_buffer.index(ClientHandler.EOL, -length)
                         data = self._decode_data(self._receive_buffer[0:index])
                         self._receive_buffer = self._receive_buffer[index + ClientHandler.EOL_LENGTH:]
                         self._network._handle_data(data)
@@ -168,7 +169,7 @@ class ClientHandler(ConnectionHandler):
 
     def send(self, data):
         self._send_buffer.append('%s%s' % (self._encode_data(data), self.EOL))
-        self._network._modify_mask(self._connection, select.EPOLLIN | select.EPOLLOUT)
+        self._network._modify_mask(self._connection, select.EPOLLOUT)
 
     def _encode_data(self, data):
         return base64.b64encode(data)

@@ -25,7 +25,7 @@ class PacketDispatcher(DataHandler):
     def _handle(self, packet):
         try:
             handler = self._handlers[packet.type]
-            logger.debug('Received Packet from %s, %s' % (packet.src, packet))
+#            logger.debug('Received Packet from %s, %s' % (packet.src, packet))
             handler.handle_packet(packet)
             return True
         except KeyError:

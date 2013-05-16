@@ -70,7 +70,7 @@ class HelloPacketHandler(PacketHandler, EventHandler):
         return ret
 
     def handle_packet(self, packet):
-        logger.debug('Hello packet received')
+#        logger.debug('Hello packet received')
 
         up_controller = packet.content.controller
         try:
