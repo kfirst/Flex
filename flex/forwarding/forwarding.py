@@ -25,6 +25,8 @@ class Forwarding(Module):
 
     def __init__(self, controller):
         self._myself = controller
+        self._my_id = controller.get_id()
+        self._my_address = controller.get_address()
         self._transformer = PacketTransformer()
         self._dispatcher = PacketDispatcher(self._transformer)
 
@@ -43,10 +45,10 @@ class Forwarding(Module):
         若不指定Controlller，则自己Controller内部关心该类型报文的模块将接收到该报文
         '''
         dst = packet.dst
-        if not dst or dst.get_id() == self._myself.get_id():
+        if not dst or dst.get_id() == self._my_id:
             return self._dispatch(packet)
         address = core.routing.get_address(dst)
-        if address == self._myself.get_address():
+        if address == self._my_address:
             return self._dispatch(packet)
         if address:
 #            logger.debug('Sending Packet to %s (address: %s), %s' % (dst, address, packet))

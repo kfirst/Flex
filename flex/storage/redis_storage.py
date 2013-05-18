@@ -5,7 +5,6 @@ Created on 2013-5-12
 '''
 
 import redis
-from flex.base.module import Module
 from flex.core import core
 from flex.model.device import Device
 from flex.model.packet import Packet, StoragePacketContent
@@ -21,11 +20,9 @@ class RedisStorage(Storage, PacketHandler):
 
     def __init__(self, servers):
         self._myself = core.myself.get_self_controller()
-        self._packet = Packet(Packet.STORAGE, StoragePacketContent(None, None, None, None))
-        self._packet.src = self._myself
         self._key_handlers = {}
         self._domain_handlers = {}
-        self._task_queue = Queue.Queue()
+        self._queue = Queue.Queue()
         self._num = len(servers)
         self._redises = [redis.Redis(host = server, port = port)
                 for server, port in servers]
@@ -66,7 +63,7 @@ class RedisStorage(Storage, PacketHandler):
         return self._string_to_data(value)
 
     def set(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SET))
+        self._queue.put((key, value, domain, self.SET))
 
     def _set(self, key, value, domain):
         name = self._make_name(key, domain)
@@ -76,7 +73,7 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def delete(self, key, domain = 'default'):
-        self._task_queue.put((key, None, domain, self.DELETE))
+        self._queue.put((key, None, domain, self.DELETE))
 
     def _delete(self, key, value, domain):
         name = self._make_name(key, domain)
@@ -91,7 +88,7 @@ class RedisStorage(Storage, PacketHandler):
         return set([self._string_to_data(value) for value in values])
 
     def sadd(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SADD))
+        self._queue.put((key, value, domain, self.SADD))
 
     def _sadd(self, key, value, domain):
         name = self._make_name(key, domain)
@@ -101,7 +98,7 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def sremove(self, key, value, domain = 'default'):
-        self._task_queue.put((key, value, domain, self.SREMOVE))
+        self._queue.put((key, value, domain, self.SREMOVE))
 
     def _sremove(self, key, value, domain):
         name = self._make_name(key, domain)
@@ -111,7 +108,7 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def sadd_multi(self, key, values, domain = 'default'):
-        self._task_queue.put((key, values, domain, self.SADD_MULTI))
+        self._queue.put((key, values, domain, self.SADD_MULTI))
 
     def _sadd_multi(self, key, values, domain):
         name = self._make_name(key, domain)
@@ -124,7 +121,7 @@ class RedisStorage(Storage, PacketHandler):
         return ret
 
     def _notify(self, key, value, domain, type):
-#        self._task_queue.put((key, value, domain, type))
+#        self._queue.put((key, value, domain, type))
         self._notify_domain(key, value, domain, type)
         self._notify_key(key, value, domain, type)
 
@@ -146,14 +143,10 @@ class RedisStorage(Storage, PacketHandler):
             self._send_packet(listener, key, value, domain, type)
 
     def _send_packet(self, listener, key, value, domain, type):
-        dst = Device.deserialize(listener)
-        packet = self._packet
-        packet.dst = dst
-        packet.content.key = key
-        packet.content.value = value
-        packet.content.domain = domain
-        packet.content.type = type
-        core.forwarding.forward(self._packet)
+        packet = Packet(Packet.STORAGE, StoragePacketContent(key, value, domain, type))
+        packet.src = self._myself
+        packet.dst = Device.deserialize(listener)
+        core.forwarding.forward(packet)
 
     def _start_thread(self):
         thread = threading.Thread(target = self._schedule)
@@ -162,7 +155,7 @@ class RedisStorage(Storage, PacketHandler):
 
     def _schedule(self):
         while 1:
-            key, value, domain, type = self._task_queue.get()
+            key, value, domain, type = self._queue.get()
             self._processer[type](key, value, domain)
 #            self._notify_domain(key, value, domain, type)
 #            self._notify_key(key, value, domain, type)

@@ -27,8 +27,6 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler, EventHandler):
         self._global_controllers = {}
         self._local_controllers = {}
         self._algorithms = []
-        self._packet = Packet(Packet.CONTROL_FROM_SWITCH, None)
-        self._packet.src = core.myself.get_self_controller()
         for algorithm, parameters in algorithms.items():
             try:
                 self._algorithms.append((getattr(SelectionAlgorithms, algorithm), parameters))
@@ -96,10 +94,11 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler, EventHandler):
         core.routing.connected(pox_content.src, self._myself.get_address())
 
     def _send_packet(self, pox_content, controllers):
-        self._packet.content = pox_content
+        packet = Packet(Packet.CONTROL_FROM_SWITCH, pox_content)
+        packet.src = self._myself
         for controller in controllers:
-            self._packet.dst = controller
-            core.forwarding.forward(self._packet)
+            packet.dst = controller
+            core.forwarding.forward(packet)
 
     def _get_controllers(self, type, switch):
         controllers = set()

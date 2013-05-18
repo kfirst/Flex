@@ -91,7 +91,7 @@ class LearningSwitch(StorageHandler):
 
         # Our table
         self.macToPort = {}
-        self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
+#        self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
 #        core.appStorage.listen_domain(self, self.L2_LEARN)
 
         # We want to hear PacketIn messages, so we listen

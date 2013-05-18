@@ -24,3 +24,7 @@ class SelectionAlgorithms(object):
     @classmethod
     def sample(cls, controllers, size):
         return random.sample(controllers, min(len(controllers), size))
+
+    @classmethod
+    def round_robin(cls, controllers):
+        pass

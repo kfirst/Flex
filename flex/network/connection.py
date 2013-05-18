@@ -14,14 +14,17 @@ class Connection(object):
 
     @classmethod
     def get_client(cls, address):
+        client = None
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 1024)
             client.connect(address)
-            client.setblocking(False)
             return cls(client, address, Connection.CLIENT)
         except Exception, e:
+            if client:
+                client.close()
             raise ConnectFailException('Can not connect to ' + str(address) + ', because of ' + str(e))
 
     @classmethod
