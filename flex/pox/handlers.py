@@ -8,8 +8,7 @@ from pox.core import core as pox_core
 from flex.core import core as flex_core
 from flex.model.packet import *
 import pox.openflow.libopenflow_01 as of
-from flex.model.action import Action
-from pox.lib.packet import ethernet
+from pox.lib.packet.ethernet import ethernet
 
 
 class ControlHandler(object):
@@ -142,7 +141,7 @@ class MatchHandler(object):
 
     @classmethod
     def data(cls, match):
-        packet = ethernet.ethernet(match.data)
+        packet = ethernet(match.data)
         return of.ofp_match.from_packet(packet, match.port)
 
 MatchHandler.HANDLER = {
