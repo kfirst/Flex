@@ -14,6 +14,7 @@ class Storage(Module):
     SADD_MULTI = 3
     SREMOVE = 4
     DELETE = 5
+    SGET = 6
 
 
     def get(self, key, domain = 'default'):

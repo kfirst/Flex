@@ -11,6 +11,7 @@ from flex.model.packet import Packet, SwitchPacketContent
 from flex.model.device import Device
 from flex.controller_adaptor.selection_algorithms import SelectionAlgorithms
 from flex.base import event
+from flex.storage.storage import Storage
 
 logger = core.get_logger()
 
@@ -56,6 +57,8 @@ class ControllerAdaptor(Module, PacketHandler, StorageHandler, EventHandler):
         self._app.process(packet.content)
 
     def handle_storage(self, key, value, domain, type):
+        if type == Storage.SADD:
+            value = [value]
         controller = Device.deserialize(key)
         if domain == self.GLOBAL_CONCERN:
             for concern_type in value:

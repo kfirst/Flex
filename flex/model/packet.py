@@ -104,25 +104,19 @@ class RoutingPacketContent(object):
 
 class StoragePacketContent(object):
 
-    def __init__(self, key, value, domain, type):
-        self.key = key
-        self.value = value
-        self.domain = domain
-        self.type = type
+    def __init__(self, tasks):
+        self.tasks = tasks
 
     def serialize(self):
-        return (self.key, self.value, self.domain, self.type)
+        return (self.tasks)
 
     @classmethod
     def deserialize(cls, data):
-        return cls(*data)
+        return cls(data)
 
     def __repr__(self):
         return object_to_string(self,
-                    key = self.key,
-                    value = self.value,
-                    domain = self.domain,
-                    type = self.type)
+                    tasks = self.tasks)
 
 
 

@@ -19,8 +19,8 @@ class Connection(object):
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
-            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 1024)
             client.connect(address)
+            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 128)
             return cls(client, address, Connection.CLIENT)
         except Exception, e:
             if client:
@@ -48,6 +48,7 @@ class Connection(object):
 
     def accept(self):
         sock, address = self._sock.accept()
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 128)
         sock.setblocking(False)
         return Connection(sock, address, Connection.CLIENT)
 
