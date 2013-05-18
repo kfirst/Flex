@@ -1,0 +1,83 @@
+#配置文件
+{
+	"module": {
+		"core": {
+			#core模块启动后需要载入的模块列表
+			"module": [
+				"flex.storage",
+				"flex.network",
+				"flex.neighbor_monitor",
+				"flex.routing",
+				"flex.forwarding",
+				"flex.controller_adaptor",
+				"flex.pox",
+				"flex.api",
+				"app.l2_learning"
+			]
+		},
+		#log模块的配置，包括记录的级别、格式和输出的方式等信息
+		"log": {
+			#级别
+			"level": "WARNING",
+			#格式
+			"format": "%(asctime)-25s%(levelname)-10s[%(name)-s](%(funcName)s): %(message)s",
+			#输出方式
+			"handler": {
+				"ColorStreamHandler": []
+			}
+		},
+		#network模块的配置，包括地址和连接数等
+		"network": {
+			"backlog": 50
+		},
+		#存储系统的配置
+		"storage": {
+			"globalStorage": {
+				"servers": [
+					["192.168.1.42", 6379],
+					["192.168.1.43", 6379],
+					["192.168.1.44", 6379]
+				]
+			},
+			"appStorage": {
+			}
+		},
+		#pox的配置
+		"pox": {
+			"pox_command_line": "openflow.of_01 --port=10101",
+			"pox_path": "../pox"
+		},
+		#底层控制器接口配置，包括使用的底层控制器、选择函数的算法等
+		"controller_adaptor": {
+			"app": "pox",
+			"algorithms": {
+				"sample": [1]
+			}
+		}
+	},
+	"topology": {
+		#自己的id
+		"my_id": "c1",
+		#controller的地址和拓扑等信息，不需要全部controller的信息，只需要邻居的即可
+		"controllers": {
+			#controller的id
+			"c1": {
+				"address": ["192.168.1.41", 12201],
+				"neighbors": {
+					"c2": "provider",
+					"c3": "provider",
+					"c4": "provider"
+				}
+			},
+			"c2": {
+				"address": ["192.168.1.42", 12202]
+			},
+			"c3": {
+				"address": ["192.168.1.43", 12203]
+			},
+			"c4": {
+				"address": ["192.168.1.44", 12203]
+			}
+		}
+	}
+}
