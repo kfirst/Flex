@@ -9,6 +9,7 @@ from flex.core import core as flex_core
 from flex.model.packet import *
 import pox.openflow.libopenflow_01 as of
 from flex.model.action import Action
+from pox.lib.packet import ethernet
 
 
 class ControlHandler(object):
@@ -112,11 +113,11 @@ class FLowModHandler(ControlHandler):
 
     def handle(self, content):
         msg = of.ofp_flow_mod()
-        msg.match = content.match
+        msg.match = MatchHandler.HANDLER[content.match.type](content.match)
         msg.idle_timeout = content.idle_timeout
         msg.hard_timeout = content.hard_timeout
         msg.buffer_id = content.buffer_id
-        msg.actions = content.actions
+        msg.actions = [ActionHandler.HANDLER[action.type](action) for action in content.actions]
         msg.data = content.data
         switch = self._get_connection(content.dst)
         switch.send(msg)
@@ -132,4 +133,18 @@ class ActionHandler(object):
 
 ActionHandler.HANDLER = {
     Action.OUTPUT: ActionHandler.output,
+}
+
+
+class MatchHandler(object):
+
+    HANDLER = None
+
+    @classmethod
+    def data(cls, match):
+        packet = ethernet.ethernet(match.data)
+        return of.ofp_match.from_packet(packet, match.port)
+
+MatchHandler.HANDLER = {
+    Match.DATA: MatchHandler.data,
 }
