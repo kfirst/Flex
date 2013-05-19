@@ -56,7 +56,7 @@ class Receiver(object):
         self._queue.put(data)
 
     def _accept_in_connection(self, connection):
-        connection = connection.accept(4096)
+        connection = connection.accept(1024 * 8)
         fd = connection.get_fileno()
         self._in_connections[fd] = connection
         self._in_handlers[fd] = ClientHandler(connection, self)

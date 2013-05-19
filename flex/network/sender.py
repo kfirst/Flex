@@ -49,7 +49,7 @@ class Sender(object):
             connection = self._out_connections[address]
         except KeyError:
             try:
-                connection = Connection.get_client(address, 4096)
+                connection = Connection.get_client(address, 1024 * 8)
                 self._out_connections[address] = connection
             except ConnectFailException, e:
                 self._logger.warning(e.message)
