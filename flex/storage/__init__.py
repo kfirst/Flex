@@ -1,6 +1,6 @@
 from flex.core import core
 from flex.storage.local_storage import LocalStorage
-from flex.storage.redis_storage_x import RedisStorage
+from flex.storage.redis_storage_ori import RedisStorage
 
 def launch():
     storages_config = core.config.get('module.storage')
