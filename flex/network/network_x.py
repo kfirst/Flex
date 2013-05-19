@@ -38,6 +38,10 @@ class Network(Module):
             data = self._receive_queue.get()
             self._data_handler.handle(data)
 
+    def terminate(self):
+        self._sender.terminate()
+        self._receiver.terminate()
+
 
 class EmptyDataHandler(DataHandler):
 

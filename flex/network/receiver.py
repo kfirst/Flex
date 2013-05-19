@@ -8,6 +8,7 @@ import select
 from flex.base.handler import ConnectionHandler
 from flex.network.connection import Connection
 import multiprocessing
+import time
 
 
 class Receiver(object):
@@ -30,16 +31,17 @@ class Receiver(object):
     def get_queue(self):
         return self._queue
 
+    def terminate(self):
+        if self._process.is_alive():
+            self._process.terminate()
+
     def _schedule(self):
         self._start_server()
         try:
             while 1:
                 events = self._epoll.poll(-1)
                 for fd, event in events:
-                    try:
-                        self._in_handlers[fd].handle(event)
-                    except:
-                        pass
+                    self._in_handlers[fd].handle(event)
         except:
             for fd, connection in self._in_connections.items():
                 connection.close()

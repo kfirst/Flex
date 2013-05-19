@@ -8,6 +8,7 @@ import multiprocessing
 import base64
 from flex.network.connection import Connection
 from flex.base.exception import ConnectFailException
+import time
 
 
 class Sender(object):
@@ -26,17 +27,21 @@ class Sender(object):
     def send(self, address, data):
         self._queue.put((address, data))
 
+    def terminate(self):
+        if self._process.is_alive():
+            self._process.terminate()
+
     def _schedule(self):
         try:
             while 1:
                 address, data = self._queue.get()
+                to_send = '%s%s' % (base64.b64encode(data), self.EOL)
                 while 1:
                     connection = self._get_out_connection(address)
                     if not connection:
                         break
-                    data = '%s%s' % (base64.b64encode(data), self.EOL)
                     try:
-                        writen = connection.send(data)
+                        writen = connection.send(to_send)
                         break
                     except Exception:
                         self._remove_out_connection(address)

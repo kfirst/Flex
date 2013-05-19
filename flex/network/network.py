@@ -43,13 +43,13 @@ class Network(Module):
         self._data_handler = data_handler
 
     def send(self, address, data):
+        to_send = '%s%s' % (base64.b64encode(data), self.EOL)
         while 1:
             connection = self._get_out_connection(address)
             if not connection:
                 return False
-            data = '%s%s' % (base64.b64encode(data), self.EOL)
             try:
-                writen = connection.send(data)
+                writen = connection.send(to_send)
                 break
             except Exception:
                 self._remove_out_connection(address)
