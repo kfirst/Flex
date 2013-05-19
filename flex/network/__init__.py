@@ -1,5 +1,5 @@
 from flex.core import core
-from flex.network.network_x import Network
+from flex.network.network import Network
 
 def launch():
     myself = core.myself.get_self_controller()
