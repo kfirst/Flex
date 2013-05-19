@@ -23,9 +23,10 @@ class Network(Module):
 
     EOL = b'#'
 
-    def __init__(self, address, backlog):
+    def __init__(self, address, backlog, buffer_size):
         self._address = address
         self._backlog = backlog
+        self._buffer_size = buffer_size
         self._run = 1
         self._data_handler = EmptyDataHandler()
 
@@ -59,7 +60,7 @@ class Network(Module):
             connection = self._out_connections[address]
         except KeyError:
             try:
-                connection = Connection.get_client(address)
+                connection = Connection.get_client(address, self._buffer_size)
                 self._out_connections[address] = connection
             except ConnectFailException, e:
                 logger.warning(e)
@@ -71,7 +72,7 @@ class Network(Module):
         connection.close()
 
     def _accept_in_connection(self, connection):
-        connection = connection.accept()
+        connection = connection.accept(self._buffer_size)
         fd = connection.get_fileno()
         self._in_connections[fd] = connection
         self._in_handlers[fd] = ClientHandler(connection, self)

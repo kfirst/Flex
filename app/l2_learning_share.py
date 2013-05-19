@@ -90,8 +90,8 @@ class LearningSwitch(StorageHandler):
         self.match = core.api.match_api
 
         # Our table
-        self.macToPort = {}
-#        self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
+#        self.macToPort = {}
+        self.L2_LEARN = 'l2_learn:%s' % self.connection.get_id()
 #        core.appStorage.listen_domain(self, self.L2_LEARN)
 
         # We want to hear PacketIn messages, so we listen
@@ -163,8 +163,8 @@ class LearningSwitch(StorageHandler):
                 msg.port = event.port
                 self.switch.send_to(self.connection, msg)
 
-        self.macToPort[packet.src] = event.port  # 1
-#        self._add_port(packet.src, event.port)
+#        self.macToPort[packet.src] = event.port  # 1
+        self._add_port(packet.src, event.port)
 
         if not self.transparent:  # 2
             if packet.type == packet.LLDP_TYPE or packet.dst.isBridgeFiltered():
@@ -174,12 +174,12 @@ class LearningSwitch(StorageHandler):
         if packet.dst.is_multicast:
             flood()  # 3a
         else:
-#            port = self._get_port(packet.dst)
-            if packet.dst not in self.macToPort:  # 4
-#            if port is None:
+            port = self._get_port(packet.dst)
+#            if packet.dst not in self.macToPort:  # 4
+            if port is None:
                 flood("Port for %s unknown -- flooding" % (packet.dst,))  # 4a
             else:
-                port = self.macToPort[packet.dst]
+#                port = self.macToPort[packet.dst]
                 if port == event.port:  # 5
                     # 5a
                     logger.warning("Same port for packet from %s -> %s on %s.%s.  Drop."

@@ -13,14 +13,14 @@ class Connection(object):
     CLIENT = 1
 
     @classmethod
-    def get_client(cls, address):
+    def get_client(cls, address, buffer_size):
         client = None
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
             client.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
             client.connect(address)
-            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 128)
+            client.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, buffer_size)
             return cls(client, address, Connection.CLIENT)
         except Exception, e:
             if client:
@@ -46,9 +46,9 @@ class Connection(object):
         self._address = address
         self._type = connection_type
 
-    def accept(self):
+    def accept(self, buffer_size):
         sock, address = self._sock.accept()
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 128)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, buffer_size)
         sock.setblocking(False)
         return Connection(sock, address, Connection.CLIENT)
 

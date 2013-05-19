@@ -117,6 +117,7 @@ class LearningSwitch(StorageHandler):
         """
         Handle packet in messages from the switch to implement above algorithm.
         """
+        time.sleep(0.002)
         packet = parse_packet(event.data)
 
         def flood (message = None):

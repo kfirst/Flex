@@ -28,7 +28,8 @@
 		},
 		#network模块的配置，包括地址和连接数等
 		"network": {
-			"backlog": 50
+			"backlog": 50,
+			"buffer_size": 32768
 		},
 		#存储系统的配置
 		"storage": {
