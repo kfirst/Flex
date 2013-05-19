@@ -290,18 +290,18 @@ class FlowModContent(ApiPacketContent):
     def deserialize(cls, data):
         content = cls(Device.deserialize(data[1]))
         content.idle_timeout = data[2]
-        content.hard_timeout = data[3]
+        content.idle_timeout = data[3]
         content.match = Match.deserialize(data[4])
-        content.buffer_id = data[5]
+        content.idle_timeout = data[5]
         content.actions = [Action.deserialize(action) for action in data[6]]
         content.data = data[7]
         return content
 
     def __repr__(self):
         return object_to_string(self, self.dst,
-                    port = self.port,
-                    buffer_id = self.buffer_id,
-                    data_len = len(self.data),
+                    idle_timeout = self.idle_timeout,
+                    idle_timeout = self.idle_timeout,
+                    idle_timeout = len(self.idle_timeout),
                     actions = self.actions)
 
 

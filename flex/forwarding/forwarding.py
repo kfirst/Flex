@@ -51,7 +51,7 @@ class Forwarding(Module):
         if address == self._my_address:
             return self._dispatch(packet)
         if address:
-            logger.debug('Sending Packet to %s (address: %s), %s' % (dst, address, packet))
+#            logger.debug('Sending Packet to %s (address: %s), %s' % (dst, address, packet))
             data = self._transformer.packet_to_data(packet)
             return core.network.send(address, data)
         else:
